@@ -13,26 +13,63 @@
     width: 90px; /* Adjust the size as needed */
 }
 
-/* Nav links styling */
-.nav-links {
-    list-style: none;
+/* Cards styling */
+.cards-container {
     display: flex;
-    margin: 0;
-    padding: 0;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    padding: 20px;
+    gap: 20px;
 }
 
-.nav-links li {
-    margin-left: 20px;
+.card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 30%;
+    text-align: center;
+    padding: 10px;
+    transition: transform 0.3s ease;
 }
 
-.nav-links li a {
-    text-decoration: none;
-    color: #333;
-    font-size: 16px;
+.card:hover {
+    transform: translateY(-10px);
 }
 
-.nav-links li a:hover {
-    color: #007bff; /* Change link color on hover */
+.card-img {
+    width: 100%;
+    height: auto;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 10px;
+}
+
+.card-caption {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.enquire-btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.enquire-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Responsive CSS for smaller screens */
+@media (max-width: 768px) {
+
+    /* Responsive card layout */
+    .card {
+        width: 100%; /* Full width on mobile */
+    }
 }
 
 
