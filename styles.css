@@ -72,29 +72,24 @@
     }
 }
 
-
-/* WhatsApp Button Styling */
-.whatsapp-button button {
+/* WhatsApp button styling */
+.whatsapp-btn {
+    display: flex;
+    align-items: center;
     background-color: #25D366;
     color: white;
-    font-size: 18px;
-    border: none;
-    border-radius: 5px;
-    padding: 15px 30px;
-    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 16px;
     transition: background-color 0.3s ease;
-    margin-top: 20px;
 }
 
-.whatsapp-button button:hover {
-    background-color: #1ebe57;
+.whatsapp-btn i {
+    margin-right: 8px;
+    font-size: 20px;
 }
 
-/* Responsive Design: For smaller screens (less than 768px) */
-@media screen and (max-width: 768px) {
-    .whatsapp-button button {
-        width: 100%;
-        padding: 15px;
-        font-size: 16px;
-    }
+.whatsapp-btn:hover {
+    background-color: #20b858;
 }
