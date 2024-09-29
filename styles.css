@@ -94,3 +94,8 @@
 .whatsapp-btn:hover {
     background-color: #20b858;
 }
+
+.category-header{
+    text-align: center;
+    padding-top: 20px;
+}
