@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Slider</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .slider {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .slider img {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100vh;
+            display: block;
+            transition: opacity 0.5s ease-in-out;
+            opacity: 1;
+            cursor: pointer;
+        }
+        .fade-out {
+            opacity: 0;
+        }
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .nav-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+            transform: scale(1.05);
+        }
+        .prev-btn {
+            left: 20px;
+        }
+        .next-btn {
+            right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slider">
+        <img id="sliderImage" src="Kashmir.jpeg" alt="Image" onclick="downloadPDF()">
+        <button class="nav-btn prev-btn" onclick="prevImage()">&#9664;</button>
+        <button class="nav-btn next-btn" onclick="nextImage()">&#9654;</button>
+    </div>
+
+    <script>
+        let images = ["Kashmir.jpeg", "ShimlaManali.jpeg","ShortKerala.jpg"];
+        let pdfs = ["Kashmir.pdf", "ShimlaManali.pdf"];
+        let currentIndex = 0;
+        let imgElement = document.getElementById("sliderImage");
+
+        function nextImage() {
+            imgElement.classList.add("fade-out");
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % images.length;
+                imgElement.src = images[currentIndex];
+                imgElement.classList.remove("fade-out");
+            }, 500);
+        }
+
+        function prevImage() {
+            imgElement.classList.add("fade-out");
+            setTimeout(() => {
+                currentIndex = (currentIndex - 1 + images.length) % images.length;
+                imgElement.src = images[currentIndex];
+                imgElement.classList.remove("fade-out");
+            }, 500);
+        }
+
+        function downloadPDF() {
+            const link = document.createElement("a");
+            link.href = pdfs[currentIndex]; // Download corresponding PDF for the current image
+            link.download = pdfs[currentIndex];
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        setInterval(nextImage, 3000); // Auto slide every 3 seconds
+    </script>
+</body>
+</html>
