@@ -21,7 +21,7 @@
   form.card-form{background:rgba(255,255,255,0.98);padding:18px;border-radius:12px;box-shadow:0 8px 28px rgba(14,30,37,0.08);}
   form h3{margin:12px 0 8px;color:var(--accent2);}
   label.block{display:block;margin:8px 0;font-weight:600;color:#333;}
-  input[type="text"], input[type="date"], input[type="number"], input[type="url"], textarea, select {
+  input[type="text"], input[type="date"], input[type="number"], input[type="url"], input[type="datetime-local"], textarea, select {
     width:100%;padding:10px;border-radius:8px;border:1px solid #e6d1a0;background:#fff;font-size:0.95rem;
   }
   textarea{min-height:60px;resize:vertical;}
@@ -103,16 +103,9 @@ function generateFlightForms(n){
     const node = el(`
       <div class="hotel-form">
         <strong>Flight ${i}</strong>
-        <div class="row" style="margin-top:8px">
-          <label class="block col">Flight Number <input type="text" name="flightNo${i}" required></label>
-          <label class="block col">Departure Time <input type="time" name="flightDepTime${i}" required></label>
-        </div>
-        <div class="row" style="margin-top:8px">
-          <label class="block col">Departure Airport <input type="text" name="flightDepAirport${i}" required></label>
-          <label class="block col">Arrival Time <input type="time" name="flightArrTime${i}" required></label>
-        </div>
-        <label class="block">Arrival Airport <input type="text" name="flightArrAirport${i}" required></label>
-      </div>
+        <div class='row'><label class='block col'>Flight Number<input type='text' name='flightNo${i}'></label><label class='block col'>Departure Date & Time<input type='datetime-local' name='flightDepDateTime${i}'></label></div>
+    <div class='row'><label class='block col'>Departure Airport<input type='text' name='flightDepAirport${i}'></label><label class='block col'>Arrival Date & Time<input type='datetime-local' name='flightArrDateTime${i}'></label></div>
+    <label class='block'>Arrival Airport<input type='text' name='flightArrAirport${i}'></label></div>
     `);
     flightsContainer.appendChild(node);
   }
@@ -129,20 +122,10 @@ function generateTrainForms(n){
     const node = el(`
       <div class="hotel-form">
         <strong>Train ${i}</strong>
-        <div class="row" style="margin-top:8px">
-          <label class="block col">Train No <input type="text" name="trainNo${i}" required></label>
-          <label class="block col">Train Name <input type="text" name="trainName${i}" required></label>
-        </div>
-        <div class="row" style="margin-top:8px">
-          <label class="block col">Departure Time <input type="time" name="trainDepTime${i}" required></label>
-          <label class="block col">Departure Station <input type="text" name="trainDepStation${i}" required></label>
-        </div>
-        <div class="row" style="margin-top:8px">
-          <label class="block col">Arrival Time <input type="time" name="trainArrTime${i}" required></label>
-          <label class="block col">Arrival Station <input type="text" name="trainArrStation${i}" required></label>
-        </div>
-        <label class="block">Seats Category (CC,SL,3AC,2AC,1AC) <input type="text" name="trainSeats${i}" required></label>
-      </div>
+        <div class='row'><label class='block col'>Train No<input type='text' name='trainNo${i}'></label><label class='block col'>Train Name<input type='text' name='trainName${i}'></label></div>
+    <div class='row'><label class='block col'>Departure Date & Time<input type='datetime-local' name='trainDepDateTime${i}'></label><label class='block col'>Departure Station<input type='text' name='trainDepStation${i}'></label></div>
+    <div class='row'><label class='block col'>Arrival Date & Time<input type='datetime-local' name='trainArrDateTime${i}'></label><label class='block col'>Arrival Station<input type='text' name='trainArrStation${i}'></label></div>
+    <label class='block'>Seats Category<select name='trainSeats${i}' required><option value=''>Select</option><option value='CC'>CC</option><option value='SL'>SL</option><option value='3AC'>3AC</option><option value='2AC'>2AC</option><option value='1AC'>1AC</option></select></label></div>
     `);
     trainsContainer.appendChild(node);
   }
@@ -165,12 +148,12 @@ document.getElementById('tourForm').addEventListener('submit',function(e){
   let flightRows='',trainRows='';
   const flights=parseInt(document.getElementById('numFlights').value||0);
   for(let i=1;i<=flights;i++){
-    flightRows+=`<tr><td>${escapeHtml(data[`flightNo${i}`]||'')}</td><td>${escapeHtml(data[`flightDepTime${i}`]||'')}</td><td>${escapeHtml(data[`flightDepAirport${i}`]||'')}</td><td>${escapeHtml(data[`flightArrTime${i}`]||'')}</td><td>${escapeHtml(data[`flightArrAirport${i}`]||'')}</td></tr>`;
+    flightRows+=`<tr><td>${escapeHtml(data[`flightNo${i}`]||'')}</td><td>${escapeHtml(data[`flightDepDateTime${i}`]||'')}</td><td>${escapeHtml(data[`flightDepAirport${i}`]||'')}</td><td>${escapeHtml(data[`flightArrDateTime${i}`]||'')}</td><td>${escapeHtml(data[`flightArrAirport${i}`]||'')}</td></tr>`;
   }
   
   const trains=parseInt(document.getElementById('numTrains').value||0);
   for(let i=1;i<=trains;i++){
-    trainRows+=`<tr><td>${escapeHtml(data[`trainNo${i}`]||'')}</td><td>${escapeHtml(data[`trainName${i}`]||'')}</td><td>${escapeHtml(data[`trainDepTime${i}`]||'')}</td><td>${escapeHtml(data[`trainDepStation${i}`]||'')}</td><td>${escapeHtml(data[`trainArrTime${i}`]||'')}</td><td>${escapeHtml(data[`trainArrStation${i}`]||'')}</td><td>${escapeHtml(data[`trainSeats${i}`]||'')}</td></tr>`;
+    trainRows+=`<tr><td>${escapeHtml(data[`trainNo${i}`]||'')}</td><td>${escapeHtml(data[`trainName${i}`]||'')}</td><td>${escapeHtml(data[`trainDepDateTime${i}`]||'')}</td><td>${escapeHtml(data[`trainDepStation${i}`]||'')}</td><td>${escapeHtml(data[`trainArrDateTime${i}`]||'')}</td><td>${escapeHtml(data[`trainArrStation${i}`]||'')}</td><td>${escapeHtml(data[`trainSeats${i}`]||'')}</td></tr>`;
   }
 
   const generatedHtml = `<!doctype html>
@@ -222,7 +205,7 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
 	  <h2 class="section-title">Flights Summary</h2>
 	  <div class="table-wrap">
 		<table aria-label="Flights summary">
-		  <thead><tr><th>Flight No</th><th>Departure Time</th><th>Departure Airport</th><th>Arrival Time</th><th>Arrival Airport</th></tr></thead>
+		  <thead><tr><th>Flight No</th><th>Departure Date & Time</th><th>Departure Airport</th><th>Arrival Date & Time</th><th>Arrival Airport</th></tr></thead>
 		  <tbody>${flightRows || '<tr><td colspan="5">No flights provided.</td></tr>'}</tbody>
 		</table>
 	  </div>
@@ -232,7 +215,7 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
 	  <h2 class="section-title">Trains Summary</h2>
 	  <div class="table-wrap">
 		<table aria-label="Trains summary">
-		  <thead><tr><th>Train No</th><th>Train Name</th><th>Departure Time</th><th>Departure Station</th><th>Arrival Time</th><th>Arrival Station</th><th>Seats Category</th></tr></thead>
+		  <thead><tr><th>Train No</th><th>Train Name</th><th>Departure Date & Time</th><th>Departure Station</th><th>Arrival Date & Time</th><th>Arrival Station</th><th>Seats Category</th></tr></thead>
 		  <tbody>${trainRows || '<tr><td colspan="7">No trains provided.</td></tr>'}</tbody>
 		</table>
 	  </div>
