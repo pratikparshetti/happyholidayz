@@ -271,7 +271,7 @@ document.getElementById('tourForm').addEventListener('submit', function(e){
     dayHtml += `<div class="day-card">
       <h3>Day ${i} – ${escapeHtml(title)} <span class="muted">(${escapeHtml(date)})</span></h3>
       ${img ? `<img src="${escapeAttr(img)}" alt="Day ${i} image" />` : ''}
-      <p>${escapeHtml(desc)}</p>
+      <p>${escapeHtml(desc).replace(/\n/g, '<br>')}</p>
     </div>`;
   }
 
@@ -398,8 +398,8 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
 
   <section class="section">
     <div class="cards">
-      <div class="card"><h3>Vehicle</h3><p>${escapeHtml(data.vehicle||'')}</p></div>
-      <div class="card"><h3>Meal Plan</h3><p>${escapeHtml(data.meals||'')}</p></div>
+      <div class="card"><h3>Vehicle</h3><p>${escapeHtml(data.vehicle||'').replace(/\n/g, '<br>')}</p></div>
+      <div class="card"><h3>Meal Plan</h3><p>${escapeHtml(data.meals||'').replace(/\n/g, '<br>')}</p></div>
     </div>
   </section>
 
@@ -412,15 +412,15 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
   </section>
 
   <section class="section">
-    <h2 class="section-title">Important Notes</h2><p>${escapeHtml(data.notes||'')}</p>
+    <h2 class="section-title">Important Notes</h2><p>${escapeHtml(data.notes||'').replace(/\n/g, '<br>')}</p>
   </section>
 
   <section class="section">
-    <h2 class="section-title">Cancellation Policy</h2><p>${escapeHtml(data.cancellation||'')}</p>
+    <h2 class="section-title">Cancellation Policy</h2><p>${escapeHtml(data.cancellation||'').replace(/\n/g, '<br>')}</p>
   </section>
 
   <section class="section">
-    <h2 class="section-title">Payment Details</h2><p>${escapeHtml(data.payment||'')}</p>
+    <h2 class="section-title">Payment Details</h2><p>${escapeHtml(data.payment||'').replace(/\n/g, '<br>')}</p>
   </section>
 </main>
 <footer style="margin-top:24px; text-align:center; color:#555;">
