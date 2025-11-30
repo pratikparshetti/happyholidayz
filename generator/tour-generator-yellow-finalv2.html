@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Dynamic Thailand Tour Generator — Yellow Theme</title>
+<title>Happy Holidayz Tour Generator — Yellow Theme</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -49,8 +49,8 @@
 <body>
 
 <header class="main-hero">
-  <h1>Dynamic Thailand Tour Generator</h1>
-  <div class="small">Yellow‑orange travel theme • Modern responsive design</div>
+  <h1>Happy Holidayz Tour Generator</h1>
+  <div class="small">Modern responsive design</div>
 </header>
 
 <main class="container">
@@ -321,7 +321,7 @@ header.hero h1{margin:0;font-size:2rem}
 .section{background:transparent;padding:18px;border-radius:12px;margin-bottom:18px}
 .price-box{display:inline-block;background:#fff3cc;padding:12px 16px;border-radius:12px;font-weight:700;color:#333;box-shadow:0 6px 18px rgba(14,30,37,0.06)}
 .cards{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}
-.card{flex:1 1 260px;padding:16px;border-radius:12px;background:var(--card-bg);box-shadow:0 8px 28px rgba(14,30,37,0.06);transition:transform .18s ease}
+.card{padding:16px;border-radius:12px;background:var(--card-bg);box-shadow:0 8px 28px rgba(14,30,37,0.06);transition:transform .18s ease}
 .card:hover{transform:translateY(-6px)}
 .day-card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 6px 18px rgba(14,30,37,0.04)}
 .day-card img{width:50%;display:block;margin:12px auto;border-radius:10px;object-fit:cover;box-shadow:0 8px 20px rgba(17,24,39,0.06)}
@@ -398,7 +398,6 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
 
   <section class="section">
     <div class="cards">
-      <div class="card"><h3>Hotels & Stay</h3><p>${escapeHtml(data.hotels||'')}</p></div>
       <div class="card"><h3>Vehicle</h3><p>${escapeHtml(data.vehicle||'')}</p></div>
       <div class="card"><h3>Meal Plan</h3><p>${escapeHtml(data.meals||'')}</p></div>
     </div>
