@@ -115,8 +115,8 @@
     <h3>Other Details</h3>
     <label class="block">Vehicle Details <textarea name="vehicle" placeholder="Private AC transfers, local sightseeing vehicle etc."></textarea></label>
     <label class="block">Meal Plan <textarea name="meals" placeholder="e.g. Breakfast & Dinner included; Lunch on island days."></textarea></label>
-    <label class="block">Inclusions (comma separated) <textarea name="inclusions" placeholder="Accommodation, Transfers, Sightseeing"></textarea></label>
-    <label class="block">Exclusions (comma separated) <textarea name="exclusions" placeholder="Flights, Visa, Personal expenses"></textarea></label>
+    <label class="block">Inclusions (semi colon ; separated) <textarea name="inclusions" placeholder="Accommodation, Transfers, Sightseeing"></textarea></label>
+    <label class="block">Exclusions (semi colon ; separated) <textarea name="exclusions" placeholder="Flights, Visa, Personal expenses"></textarea></label>
     <label class="block">Important Notes <textarea name="notes"></textarea></label>
     <label class="block">Cancellation Policy <textarea name="cancellation"></textarea></label>
     <label class="block">Payment Details <textarea name="payment"></textarea></label>
@@ -271,7 +271,7 @@ document.getElementById('tourForm').addEventListener('submit', function(e){
     dayHtml += `<div class="day-card">
       <h3>Day ${i} – ${escapeHtml(title)} <span class="muted">(${escapeHtml(date)})</span></h3>
       ${img ? `<img src="${escapeAttr(img)}" alt="Day ${i} image" />` : ''}
-      <p>${escapeHtml(desc)}</p>
+      <p>${escapeHtml(desc).replace(/\n/g, '<br>')}</p>
     </div>`;
   }
 
@@ -301,8 +301,8 @@ document.getElementById('tourForm').addEventListener('submit', function(e){
     trainRows+=`<tr><td>${escapeHtml(data[`trainNo${i}`]||'')}</td><td>${escapeHtml(data[`trainName${i}`]||'')}</td><td>${escapeHtml(data[`trainDepDateTime${i}`]||'')}</td><td>${escapeHtml(data[`trainDepStation${i}`]||'')}</td><td>${escapeHtml(data[`trainArrDateTime${i}`]||'')}</td><td>${escapeHtml(data[`trainArrStation${i}`]||'')}</td><td>${escapeHtml(data[`trainSeats${i}`]||'')}</td></tr>`;
   }
 
-  const inclusionsList = (data.inclusions||'').split(',').map(s=>s.trim()).filter(Boolean).map(s=>`<li>${escapeHtml(s)}</li>`).join('');
-  const exclusionsList = (data.exclusions||'').split(',').map(s=>s.trim()).filter(Boolean).map(s=>`<li>${escapeHtml(s)}</li>`).join('');
+  const inclusionsList = (data.inclusions||'').split(';').map(s=>s.trim()).filter(Boolean).map(s=>`<li>${escapeHtml(s)}</li>`).join('');
+  const exclusionsList = (data.exclusions||'').split(';').map(s=>s.trim()).filter(Boolean).map(s=>`<li>${escapeHtml(s)}</li>`).join('');
 
   // Generated page HTML (keeps the modern yellow-orange styling)
   const generatedHtml = `<!doctype html>
@@ -398,8 +398,8 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
 
   <section class="section">
     <div class="cards">
-      <div class="card"><h3>Vehicle</h3><p>${escapeHtml(data.vehicle||'')}</p></div>
-      <div class="card"><h3>Meal Plan</h3><p>${escapeHtml(data.meals||'')}</p></div>
+      <div class="card"><h3>Vehicle</h3><p>${escapeHtml(data.vehicle||'').replace(/\n/g, '<br>')}</p></div>
+      <div class="card"><h3>Meal Plan</h3><p>${escapeHtml(data.meals||'').replace(/\n/g, '<br>')}</p></div>
     </div>
   </section>
 
@@ -412,15 +412,15 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
   </section>
 
   <section class="section">
-    <h2 class="section-title">Important Notes</h2><p>${escapeHtml(data.notes||'')}</p>
+    <h2 class="section-title">Important Notes</h2><p>${escapeHtml(data.notes||'').replace(/\n/g, '<br>')}</p>
   </section>
 
   <section class="section">
-    <h2 class="section-title">Cancellation Policy</h2><p>${escapeHtml(data.cancellation||'')}</p>
+    <h2 class="section-title">Cancellation Policy</h2><p>${escapeHtml(data.cancellation||'').replace(/\n/g, '<br>')}</p>
   </section>
 
   <section class="section">
-    <h2 class="section-title">Payment Details</h2><p>${escapeHtml(data.payment||'')}</p>
+    <h2 class="section-title">Payment Details</h2><p>${escapeHtml(data.payment||'').replace(/\n/g, '<br>')}</p>
   </section>
 </main>
 <footer style="margin-top:24px; text-align:center; color:#555;">
