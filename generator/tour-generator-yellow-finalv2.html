@@ -64,8 +64,13 @@
     <label class="block">Overview <textarea name="overview" placeholder="Short overview for the tour" required></textarea></label>
     <div class="row">
       <label class="block col">Tour Price (INR) <input type="text" name="price" placeholder="50000" required></label>
-      <label class="block col">Number of Days <input type="number" name="numDays" min="1" value="1" required></label>
+      <label class="block col">Number of Days <input type="number" name="numDays" id="numDays" min="1" value="1" required></label>
     </div>
+
+<label class="block">Tour Start Date
+  <input type="date" name="startDate" id="startDate" required>
+</label>
+<div class="small">Dates will auto-fill based on this start date.</div>
 
     <h3>Daywise Itinerary</h3>
     <div class="small">Set the number of days above — day forms will be generated automatically.</div>
@@ -128,6 +133,18 @@
 
 <script>
 // Helpers
+
+function autoFillDates(){
+  const start = document.getElementById("startDate").value;
+  if(!start) return;
+  const base = new Date(start);
+  document.querySelectorAll(".dayDate").forEach((d,i)=>{
+    let next = new Date(base);
+    next.setDate(base.getDate() + i);
+    d.value = next.toISOString().split("T")[0];
+  });
+}
+
 function el(html){ const template=document.createElement('template'); template.innerHTML=html.trim(); return template.content.firstChild; }
 function sanitizeFilename(name){ return name.replace(/[^a-z0-9_\-]+/gi,'_').replace(/_+/g,'_').trim(); }
 
@@ -143,7 +160,7 @@ function generateDayForms(n){
         <strong>Day ${i}</strong>
         <div class="row" style="margin-top:8px">
           <label class="block col">Title <input type="text" name="dayTitle${i}" required></label>
-          <label class="block col">Date <input type="date" name="dayDate${i}" required></label>
+          <label class="block col">Date <input type="date" name="dayDate${i}" class="dayDate" required></label>
         </div>
         <label class="block">Description <textarea name="dayDesc${i}" required></textarea></label>
         <label class="block">Image URL <input type="url" name="dayImg${i}" placeholder="https://..."></label>
@@ -151,6 +168,7 @@ function generateDayForms(n){
     `);
     daysContainer.appendChild(node);
   }
+  autoFillDates();
 }
 
 // Hotels dynamic
@@ -229,7 +247,8 @@ generateFlightForms(parseInt(numFlightsInput.value)||0);
 generateTrainForms(parseInt(numTrainsInput.value)||0);
 
 // Event listeners
-numDaysInput.addEventListener('change', ()=> generateDayForms(parseInt(numDaysInput.value)||1));
+numDaysInput.addEventListener('change', ()=> { generateDayForms(parseInt(numDaysInput.value)||1); autoFillDates(); });
+document.getElementById('startDate').addEventListener('change', autoFillDates);
 genHotelsBtn.addEventListener('click', ()=> generateHotelForms(parseInt(numHotelsInput.value)||0));
 genFlightsBtn.addEventListener('click', ()=> generateFlightForms(parseInt(numFlightsInput.value)||0));
 genTrainsBtn.addEventListener('click', ()=> generateTrainForms(parseInt(numTrainsInput.value)||0));
