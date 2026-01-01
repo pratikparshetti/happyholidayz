@@ -2,6 +2,8 @@ import os
 import json
 import urllib.request
 from flask import Flask, render_template, request, jsonify, make_response
+import google.generativeai as genai
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 STORAGE_DIR = 'saved_itineraries'
@@ -228,27 +230,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
 @app.route('/')
 def index():
-    github_url = "https://raw.githubusercontent.com/pratikparshetti/happyholidayz/main/generator/tour-generator-yellow-finalv2.html"
+    return render_template('index.html')
+
+@app.route('/api/generate', methods=['POST'])
+def generate_itinerary():
     try:
-        # Fetch fresh content from GitHub
-        with urllib.request.urlopen(github_url) as response:
-            html_content = response.read().decode('utf-8')
+        data = request.json
+        destination = data.get('destination')
+        days = int(data.get('days', 3))
         
-        # Inject HTML (Before '<h3>Customer Details</h3>')
-        target_str = '<h3>Customer Details</h3>'
-        if target_str in html_content:
-            html_content = html_content.replace(target_str, HTML_INJECTION + target_str)
+        if not destination:
+            return jsonify({"success": False, "message": "Destination is required"}), 400
+
+        # Configure Gemini
+        api_key = os.getenv('GEMINI_API_KEY')
+        if not api_key:
+             return jsonify({"success": False, "message": "GEMINI_API_KEY not set on server"}), 500
         
-        # Inject JS (At the end of body) - careful to replace only the LAST </body> 
-        # because the user's JS contains "</body>" in a string literal.
-        if '</body>' in html_content:
-            parts = html_content.rpartition('</body>')
-            html_content = parts[0] + JS_INJECTION + '</body>' + parts[2]
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-flash-latest')
+
+        # Prompt construction
+        prompt = f"""
+        Generate a {days}-day travel itinerary for {destination}. 
+        Return ONLY valid JSON in the following format:
         
-        return make_response(html_content)
+        {{
+            "tourName": "Creative Tour Name for {destination}",
+            "overview": "A brief 2-3 sentence overview of the trip.",
+            "days": [
+                {{
+                    "title": "Title ONLY (e.g. Arrival & City Tour). Do NOT include 'Day 1' prefix.",
+                    "description": "Detailed activities for the day."
+                }},
+                ... (repeat for {days} days)
+            ]
+        }}
         
+        Do not include markdown formatting like ```json or ```. Just the raw JSON.
+        """
+        
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+        
+        # Clean potential markdown
+        if text.startswith('```json'):
+            text = text[7:]
+        if text.endswith('```'):
+            text = text[:-3]
+            
+        itinerary_data = json.loads(text)
+        return jsonify({"success": True, "data": itinerary_data})
+
     except Exception as e:
-        return f"<h1>Error fetching remote template</h1><p>{str(e)}</p>", 500
+        print(f"Error generating itinerary: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/api/save', methods=['POST'])
 def save_itinerary():

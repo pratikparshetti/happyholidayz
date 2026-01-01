@@ -1,0 +1,3 @@
+set GEMINI_API_KEY=AIzaSyCZT3Q7ZaliddVyiq3UC7X6FWDdYIfxe3o
+python app.py
+pause

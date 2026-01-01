@@ -190,6 +190,26 @@
   <main class="container">
     <form id="tourForm" class="card-form">
 
+      <!-- AI Trip Planner Section -->
+      <div style="background:#fff8dc; padding:15px; border-radius:8px; margin-bottom:20px; border:2px solid #ffcc00;">
+        <h4 style="margin-top:0; color:#d35400;">✨ AI Trip Planner</h4>
+        <div class="row">
+          <div class="col">
+            <label style="font-weight:bold; font-size:0.9rem;">Destination</label>
+            <input type="text" id="aiDestination" placeholder="e.g. Kyoto, Japan">
+          </div>
+          <div class="col" style="flex: 0 0 100px;">
+            <label style="font-weight:bold; font-size:0.9rem;">Days</label>
+            <input type="number" id="aiDays" value="5" min="1" max="15">
+          </div>
+          <div class="col" style="align-self:end;">
+            <button type="button" class="btn" style="background:#d35400;" onclick="generateItinerary()">Generate Itinerary</button>
+          </div>
+        </div>
+        <div id="aiStatus" style="margin-top:10px; font-weight:bold; color:#d35400;"></div>
+      </div>
+      <!-- End AI Trip Planner -->
+
       <!-- Added Save/Load Functionality -->
       <div style="background:#eef; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #ccd;">
         <h4 style="margin-top:0; color:#333;">💾 Save / Load Project</h4>
@@ -638,6 +658,59 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
       el.textContent = msg;
       el.style.color = isErr ? 'red' : 'green';
       setTimeout(() => el.textContent = '', 3000);
+    }
+
+    // --- AI Generation Logic ---
+    async function generateItinerary() {
+        const dest = document.getElementById('aiDestination').value;
+        const days = document.getElementById('aiDays').value;
+        const statusEl = document.getElementById('aiStatus');
+        
+        if(!dest) { statusEl.textContent = "Please enter a destination."; return; }
+        
+        statusEl.textContent = "Generating itinerary... this may take a few seconds 🤖";
+        
+        try {
+            const res = await fetch('/api/generate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ destination: dest, days: days })
+            });
+            const result = await res.json();
+            
+            if(result.success) {
+                const data = result.data;
+                const form = document.getElementById('tourForm');
+                
+                // Populate Basic Info
+                if(data.tourName) form.elements['tourName'].value = data.tourName;
+                if(data.overview) form.elements['overview'].value = data.overview;
+                
+                // Set Days and Generate Forms
+                const numDays = data.days.length;
+                document.getElementById('numDays').value = numDays;
+                
+                // Trigger day form generation
+                generateDayForms(numDays);
+                
+                // Populate Days
+                data.days.forEach((day, index) => {
+                    const i = index + 1;
+                    const titleInput = form.elements['dayTitle' + i];
+                    const descInput = form.elements['dayDesc' + i];
+                    
+                    if(titleInput) titleInput.value = day.title;
+                    if(descInput) descInput.value = day.description;
+                });
+                
+                statusEl.textContent = "Itinerary generated successfully! ✨";
+                setTimeout(() => statusEl.textContent = '', 5000);
+            } else {
+                statusEl.textContent = "Error: " + result.message;
+            }
+        } catch(e) {
+            statusEl.textContent = "Network Error: " + e;
+        }
     }
 
     async function saveProject() {
