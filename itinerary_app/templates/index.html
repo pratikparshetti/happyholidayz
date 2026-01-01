@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Happy Holidayz Tour Generator — Yellow Theme</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent1: #ffcc00;
+      --accent2: #ff9900;
+      --card-bg: rgba(255, 248, 220, 0.95);
+      --cream: #fff8dc;
+      --muted: #6b6b6b;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background: #fffaf0;
+      color: #222;
+      line-height: 1.45;
+    }
+
+    header.main-hero {
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      padding: 40px 20px;
+      text-align: center;
+      color: #fff;
+    }
+
+    header.main-hero h1 {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: 0.4px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 22px auto;
+      padding: 0 18px;
+    }
+
+    form.card-form {
+      background: rgba(255, 255, 255, 0.98);
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 8px 28px rgba(14, 30, 37, 0.08);
+    }
+
+    form h3 {
+      margin: 12px 0 8px;
+      color: var(--accent2);
+    }
+
+    label.block {
+      display: block;
+      margin: 8px 0;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    input[type="url"],
+    input[type="datetime-local"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #e6d1a0;
+      background: #fff;
+      font-size: 0.95rem;
+    }
+
+    textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+
+    .small {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .col {
+      flex: 1;
+    }
+
+    .btn {
+      background: var(--accent2);
+      color: #fff;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn.secondary {
+      background: #fff;
+      border: 1px solid #e6d1a0;
+      color: var(--accent2);
+    }
+
+    .inline {
+      display: inline-block;
+    }
+
+    hr.sep {
+      border: none;
+      border-bottom: 1px solid #f1e3b0;
+      margin: 14px 0;
+    }
+
+    /* Day form */
+    .day-form {
+      background: var(--cream);
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #f0e6b5;
+      margin-bottom: 12px;
+    }
+
+    .hotel-form {
+      background: var(--cream);
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #f0e6b5;
+      margin-bottom: 12px;
+    }
+
+    /* Preview / Download area */
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* Generated page styles (preview) - kept inside generated HTML too */
+    /* Utility */
+    @media (max-width:900px) {
+      .row {
+        flex-direction: column
+      }
+    }
+
+    footer {
+      padding: 18px;
+      text-align: center;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      margin-top: 28px;
+    }
+
+    /* small helpers */
+    .muted {
+      color: var(--muted)
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="main-hero">
+    <h1>Happy Holidayz Tour Generator</h1>
+    <div class="small">Modern responsive design</div>
+  </header>
+
+  <main class="container">
+    <form id="tourForm" class="card-form">
+
+      <!-- Added Save/Load Functionality -->
+      <div style="background:#eef; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #ccd;">
+        <h4 style="margin-top:0; color:#333;">💾 Save / Load Project</h4>
+        <div class="row">
+          <div class="col">
+            <label style="font-weight:bold; font-size:0.9rem;">Project Name</label>
+            <input type="text" id="projectFilename" placeholder="e.g. Thailand_Trip_Draft">
+          </div>
+          <div class="col" style="align-self:end;">
+            <button type="button" class="btn" style="background:#27ae60;" onclick="saveProject()">Save Project</button>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <div class="col">
+            <label style="font-weight:bold; font-size:0.9rem;">Load Existing</label>
+            <select id="savedProjectsList" style="width:100%; padding:9px;">
+              <option value="">Select a saved project...</option>
+            </select>
+          </div>
+          <div class="col" style="align-self:end;">
+            <button type="button" class="btn secondary" onclick="loadProject()">Load Project</button>
+            <button type="button" class="btn secondary" onclick="refreshProjectList()">Refresh List</button>
+          </div>
+        </div>
+        <div id="statusMsg" style="margin-top:10px; font-weight:bold;"></div>
+      </div>
+      <!-- End Save/Load Functionality -->
+
+      <h3>Customer Details</h3>
+      <label class="block">Customer Name <input type="text" name="customerName" required></label>
+      <label class="block">Total Number of People <input type="number" name="totalPeople" min="1" value="2"
+          required></label>
+
+      <h3>Tour Details</h3>
+      <label class="block">Tour Name <input type="text" name="tourName" placeholder="e.g. Thailand Delight Tour"
+          required></label>
+      <label class="block">Overview <textarea name="overview" placeholder="Short overview for the tour"
+          required></textarea></label>
+      <div class="row">
+        <label class="block col">Tour Price (INR) <input type="text" name="price" placeholder="50000" required></label>
+        <label class="block col">Number of Days <input type="number" name="numDays" id="numDays" min="1" value="1"
+            required></label>
+      </div>
+
+      <label class="block">Tour Start Date
+        <input type="date" name="startDate" id="startDate" required>
+      </label>
+      <div class="small">Dates will auto-fill based on this start date.</div>
+
+      <h3>Daywise Itinerary</h3>
+      <div class="small">Set the number of days above — day forms will be generated automatically.</div>
+      <div id="daysContainer" style="margin-top:10px"></div>
+
+      <hr class="sep">
+
+      <h3>Hotel Details (Summary table)</h3>
+      <div class="row">
+        <label class="block col">Number of Hotels <input type="number" id="numHotels" min="0" value="1"></label>
+        <div style="align-self:end">
+          <button type="button" class="btn secondary" id="genHotelsBtn">Generate Hotel Fields</button>
+        </div>
+      </div>
+      <div id="hotelsContainer" style="margin-top:10px"></div>
+
+      <hr class="sep">
+
+      <h3>Flight Details (Summary table)</h3>
+      <div class="row">
+        <label class="block col">Number of Flights <input type="number" id="numFlights" min="0" value="0"></label>
+        <div style="align-self:end">
+          <button type="button" class="btn secondary" id="genFlightsBtn">Generate Flight Fields</button>
+        </div>
+      </div>
+      <div id="flightsContainer" style="margin-top:10px"></div>
+
+      <hr class="sep">
+
+      <h3>Train Details (Summary table)</h3>
+      <div class="row">
+        <label class="block col">Number of Trains <input type="number" id="numTrains" min="0" value="0"></label>
+        <div style="align-self:end">
+          <button type="button" class="btn secondary" id="genTrainsBtn">Generate Train Fields</button>
+        </div>
+      </div>
+      <div id="trainsContainer" style="margin-top:10px"></div>
+
+
+      <hr class="sep">
+
+      <h3>Other Details</h3>
+      <label class="block">Vehicle Details <textarea name="vehicle"
+          placeholder="Private AC transfers, local sightseeing vehicle etc."></textarea></label>
+      <label class="block">Meal Plan <textarea name="meals"
+          placeholder="e.g. Breakfast & Dinner included; Lunch on island days."></textarea></label>
+      <label class="block">Inclusions (semi colon ; separated) <textarea name="inclusions"
+          placeholder="Accommodation, Transfers, Sightseeing"></textarea></label>
+      <label class="block">Exclusions (semi colon ; separated) <textarea name="exclusions"
+          placeholder="Flights, Visa, Personal expenses"></textarea></label>
+      <label class="block">Important Notes <textarea name="notes"></textarea></label>
+      <label class="block">Cancellation Policy <textarea name="cancellation"></textarea></label>
+      <label class="block">Payment Details <textarea name="payment"></textarea></label>
+
+      <div class="actions">
+        <button class="btn" type="submit">Generate & Preview</button>
+        <button class="btn secondary" type="button" id="downloadBtn" style="display:none">Download Generated
+          HTML</button>
+        <div class="note">After preview opens, you can download the page or use the button above.</div>
+      </div>
+    </form>
+  </main>
+
+  <footer>© 2025 Happy Holidayz Tours and Travels</footer>
+
+  <script>
+    // Helpers
+
+    function autoFillDates() {
+      const start = document.getElementById("startDate").value;
+      if (!start) return;
+      const base = new Date(start);
+      document.querySelectorAll(".dayDate").forEach((d, i) => {
+        let next = new Date(base);
+        next.setDate(base.getDate() + i);
+        d.value = next.toISOString().split("T")[0];
+      });
+    }
+
+    function el(html) { const template = document.createElement('template'); template.innerHTML = html.trim(); return template.content.firstChild; }
+    function sanitizeFilename(name) { return name.replace(/[^a-z0-9_\-]+/gi, '_').replace(/_+/g, '_').trim(); }
+
+    // Dynamic day forms
+    const daysContainer = document.getElementById('daysContainer');
+    const numDaysInput = document.querySelector('[name="numDays"]');
+
+    function generateDayForms(n) {
+      daysContainer.innerHTML = '';
+      for (let i = 1; i <= n; i++) {
+        const node = el(`
+      <div class="day-form">
+        <strong>Day ${i}</strong>
+        <div class="row" style="margin-top:8px">
+          <label class="block col">Title <input type="text" name="dayTitle${i}" required></label>
+          <label class="block col">Date <input type="date" name="dayDate${i}" class="dayDate" required></label>
+        </div>
+        <label class="block">Description <textarea name="dayDesc${i}" required></textarea></label>
+        <label class="block">Image URL <input type="url" name="dayImg${i}" placeholder="https://..."></label>
+      </div>
+    `);
+        daysContainer.appendChild(node);
+      }
+      autoFillDates();
+    }
+
+    // Hotels dynamic
+    const hotelsContainer = document.getElementById('hotelsContainer');
+    const genHotelsBtn = document.getElementById('genHotelsBtn');
+    const numHotelsInput = document.getElementById('numHotels');
+
+    function generateHotelForms(n) {
+      hotelsContainer.innerHTML = '';
+      for (let i = 1; i <= n; i++) {
+        const node = el(`
+      <div class="hotel-form">
+        <strong>Hotel ${i}</strong>
+        <div class="row" style="margin-top:8px">
+          <label class="block col">Hotel Name <input type="text" name="hotelName${i}" required></label>
+          <label class="block col">Room Type <input type="text" name="roomType${i}" required></label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <label class="block col">Check-in <input type="date" name="checkIn${i}" required></label>
+          <label class="block col">Check-out <input type="date" name="checkOut${i}" required></label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <label class="block col">No. of Rooms <input type="number" min="1" name="noRooms${i}" value="1" required></label>
+          <label class="block col">Nights <input type="number" min="1" name="nights${i}" value="1" required></label>
+        </div>
+        <label class="block">City <input type="text" name="city${i}" required></label>
+      </div>
+    `);
+        hotelsContainer.appendChild(node);
+      }
+    }
+
+    // Flights dynamic
+    const flightsContainer = document.getElementById('flightsContainer');
+    const genFlightsBtn = document.getElementById('genFlightsBtn');
+    const numFlightsInput = document.getElementById('numFlights');
+
+    function generateFlightForms(n) {
+      flightsContainer.innerHTML = '';
+      for (let i = 1; i <= n; i++) {
+        const node = el(`
+      <div class="hotel-form">
+        <strong>Flight ${i}</strong>
+        <div class='row'><label class='block col'>Flight Number<input type='text' name='flightNo${i}'></label><label class='block col'>Departure Date & Time<input type='datetime-local' name='flightDepDateTime${i}'></label></div>
+    <div class='row'><label class='block col'>Departure Airport<input type='text' name='flightDepAirport${i}'></label><label class='block col'>Arrival Date & Time<input type='datetime-local' name='flightArrDateTime${i}'></label></div>
+    <label class='block'>Arrival Airport<input type='text' name='flightArrAirport${i}'></label></div>
+    `);
+        flightsContainer.appendChild(node);
+      }
+    }
+
+    // Trains dynamic
+    const trainsContainer = document.getElementById('trainsContainer');
+    const genTrainsBtn = document.getElementById('genTrainsBtn');
+    const numTrainsInput = document.getElementById('numTrains');
+
+    function generateTrainForms(n) {
+      trainsContainer.innerHTML = '';
+      for (let i = 1; i <= n; i++) {
+        const node = el(`
+      <div class="hotel-form">
+        <strong>Train ${i}</strong>
+        <div class='row'><label class='block col'>Train No<input type='text' name='trainNo${i}'></label><label class='block col'>Train Name<input type='text' name='trainName${i}'></label></div>
+    <div class='row'><label class='block col'>Departure Date & Time<input type='datetime-local' name='trainDepDateTime${i}'></label><label class='block col'>Departure Station<input type='text' name='trainDepStation${i}'></label></div>
+    <div class='row'><label class='block col'>Arrival Date & Time<input type='datetime-local' name='trainArrDateTime${i}'></label><label class='block col'>Arrival Station<input type='text' name='trainArrStation${i}'></label></div>
+    <label class='block'>Seats Category<select name='trainSeats${i}' required><option value=''>Select</option><option value='CC'>CC</option><option value='SL'>SL</option><option value='3AC'>3AC</option><option value='2AC'>2AC</option><option value='1AC'>1AC</option></select></label></div>
+    `);
+        trainsContainer.appendChild(node);
+      }
+    }
+
+    // Initialize
+    generateDayForms(parseInt(numDaysInput.value) || 1);
+    generateHotelForms(parseInt(numHotelsInput.value) || 0);
+    generateFlightForms(parseInt(numFlightsInput.value) || 0);
+    generateTrainForms(parseInt(numTrainsInput.value) || 0);
+
+    // Event listeners
+    numDaysInput.addEventListener('change', () => { generateDayForms(parseInt(numDaysInput.value) || 1); autoFillDates(); });
+    document.getElementById('startDate').addEventListener('change', autoFillDates);
+    genHotelsBtn.addEventListener('click', () => generateHotelForms(parseInt(numHotelsInput.value) || 0));
+    genFlightsBtn.addEventListener('click', () => generateFlightForms(parseInt(numFlightsInput.value) || 0));
+    genTrainsBtn.addEventListener('click', () => generateTrainForms(parseInt(numTrainsInput.value) || 0));
+
+    // Main submit handler - generates HTML and opens preview and enables download
+    document.getElementById('tourForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const fd = new FormData(this);
+      const data = {};
+      fd.forEach((v, k) => data[k] = v);
+
+      // Build day HTML
+      const days = parseInt(data.numDays || 0);
+      let dayHtml = '';
+      for (let i = 1; i <= days; i++) {
+        const title = data['dayTitle' + i] || '';
+        const date = data['dayDate' + i] || '';
+        const desc = data['dayDesc' + i] || '';
+        const img = data['dayImg' + i] || '';
+        dayHtml += `<div class="day-card">
+      <h3>Day ${i} – ${escapeHtml(title)} <span class="muted">(${escapeHtml(date)})</span></h3>
+      ${img ? `<img src="${escapeAttr(img)}" alt="Day ${i} image" />` : ''}
+      <p>${escapeHtml(desc).replace(/\n/g, '<br>')}</p>
+    </div>`;
+      }
+
+      // Build hotel table rows
+      const hotels = parseInt(document.getElementById('numHotels').value || 0);
+      let hotelRows = '';
+      for (let i = 1; i <= hotels; i++) {
+        hotelRows += `<tr>
+      <td>${escapeHtml(data['hotelName' + i] || '')}</td>
+      <td>${escapeHtml(data['roomType' + i] || '')}</td>
+      <td>${escapeHtml(data['checkIn' + i] || '')}</td>
+      <td>${escapeHtml(data['checkOut' + i] || '')}</td>
+      <td>${escapeHtml(data['noRooms' + i] || '')}</td>
+      <td>${escapeHtml(data['nights' + i] || '')}</td>
+      <td>${escapeHtml(data['city' + i] || '')}</td>
+    </tr>`;
+      }
+
+      let flightRows = '', trainRows = '';
+      const flights = parseInt(document.getElementById('numFlights').value || 0);
+      for (let i = 1; i <= flights; i++) {
+        flightRows += `<tr><td>${escapeHtml(data[`flightNo${i}`] || '')}</td><td>${escapeHtml(data[`flightDepDateTime${i}`] || '')}</td><td>${escapeHtml(data[`flightDepAirport${i}`] || '')}</td><td>${escapeHtml(data[`flightArrDateTime${i}`] || '')}</td><td>${escapeHtml(data[`flightArrAirport${i}`] || '')}</td></tr>`;
+      }
+
+      const trains = parseInt(document.getElementById('numTrains').value || 0);
+      for (let i = 1; i <= trains; i++) {
+        trainRows += `<tr><td>${escapeHtml(data[`trainNo${i}`] || '')}</td><td>${escapeHtml(data[`trainName${i}`] || '')}</td><td>${escapeHtml(data[`trainDepDateTime${i}`] || '')}</td><td>${escapeHtml(data[`trainDepStation${i}`] || '')}</td><td>${escapeHtml(data[`trainArrDateTime${i}`] || '')}</td><td>${escapeHtml(data[`trainArrStation${i}`] || '')}</td><td>${escapeHtml(data[`trainSeats${i}`] || '')}</td></tr>`;
+      }
+
+      const inclusionsList = (data.inclusions || '').split(';').map(s => s.trim()).filter(Boolean).map(s => `<li>${escapeHtml(s)}</li>`).join('');
+      const exclusionsList = (data.exclusions || '').split(';').map(s => s.trim()).filter(Boolean).map(s => `<li>${escapeHtml(s)}</li>`).join('');
+
+      // Generated page HTML (keeps the modern yellow-orange styling)
+      const generatedHtml = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHtml(data.tourName || 'Tour')}</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--accent1:#ffcc00;--accent2:#ff9900;--card-bg:rgba(255,248,220,0.95);--cream:#fff8dc;--muted:#6b6b6b}
+*{box-sizing:border-box}body{font-family:'Poppins',sans-serif;margin:0;background:#fffaf0;color:#222;line-height:1.5}
+header.hero{background:linear-gradient(135deg,var(--accent1),var(--accent2));padding:48px 18px;text-align:center;color:#fff}
+header.hero h1{margin:0;font-size:2rem}
+.container{max-width:1100px;margin:26px auto;padding:0 18px}
+.customer-box{background:var(--card-bg);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(14,30,37,0.06);margin-bottom:18px}
+.section{background:transparent;padding:18px;border-radius:12px;margin-bottom:18px}
+.price-box{display:inline-block;background:#fff3cc;padding:12px 16px;border-radius:12px;font-weight:700;color:#333;box-shadow:0 6px 18px rgba(14,30,37,0.06)}
+.cards{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}
+.card{padding:16px;border-radius:12px;background:var(--card-bg);box-shadow:0 8px 28px rgba(14,30,37,0.06);transition:transform .18s ease}
+.card:hover{transform:translateY(-6px)}
+.day-card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 6px 18px rgba(14,30,37,0.04)}
+.day-card img{width:50%;display:block;margin:12px auto;border-radius:10px;object-fit:cover;box-shadow:0 8px 20px rgba(17,24,39,0.06)}
+h2.section-title{color:var(--accent2);border-bottom:3px solid #ffe8a7;display:inline-block;padding-bottom:6px;margin-bottom:12px}
+.table-wrap{overflow:auto;border-radius:12px;margin-top:12px}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th,td{padding:10px 12px;border:1px solid #f0e6b5;text-align:center}
+th{background:#fff3cc;color:#333;font-weight:600}
+tbody tr:nth-child(even){background:var(--cream)}
+tbody tr:hover{background:#ffeebb}
+ul{padding-left:18px}
+footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;padding:16px;text-align:center;margin-top:20px}
+@media(max-width:900px){.day-card img{width:90%}.cards{flex-direction:column}table{min-width:unset}}
+</style>
+</head>
+<body>
+
+<header style="margin-bottom:24px; text-align:center;">
+  <img src="https://happyholidayztours.in/logo.png" alt="Logo" style="height:80px;">
+  <h1>Happy Holidayz Tours and Travels</h1>
+  <p>Plot no 25, Dr J J Magdum Housing Society, Jaysingpur – 416101, Dist. Kolhapur, Maharashtra, India</p>
+  <p>Contact: +91 7058220372 / 9604894046 | Email: happyholidayz72@gmail.com</p>
+</header>
+
+
+<header class="hero"><h1>${escapeHtml(data.tourName || 'Tour')}</h1></header>
+<main class="container">
+  <section class="customer-box">
+    <strong>Customer:</strong> ${escapeHtml(data.customerName || '')} &nbsp; • &nbsp; <strong>People:</strong> ${escapeHtml(data.totalPeople || '')}
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Overview</h2>
+    <p>${escapeHtml(data.overview || '').replace(/\n/g, '<br>')}</p>
+    <div class="price-box">💰 ₹${escapeHtml(data.price || '')}</div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Daywise Itinerary</h2>
+    ${dayHtml}
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Hotels Summary</h2>
+    <div class="table-wrap">
+      <table aria-label="Hotel summary">
+        <thead><tr><th>Hotel Name</th><th>Room Type</th><th>Check-in</th><th>Check-out</th><th>No. of Rooms</th><th>Nights</th><th>City</th></tr></thead>
+        <tbody>
+          ${hotelRows || '<tr><td colspan="7">No hotels provided.</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  
+	<section class="section">
+	  <h2 class="section-title">Flights Summary</h2>
+	  <div class="table-wrap">
+		<table aria-label="Flights summary">
+		  <thead><tr><th>Flight No</th><th>Departure Date & Time</th><th>Departure Airport</th><th>Arrival Date & Time</th><th>Arrival Airport</th></tr></thead>
+		  <tbody>${flightRows || '<tr><td colspan="5">No flights provided.</td></tr>'}</tbody>
+		</table>
+	  </div>
+	</section>
+
+	<section class="section">
+	  <h2 class="section-title">Trains Summary</h2>
+	  <div class="table-wrap">
+		<table aria-label="Trains summary">
+		  <thead><tr><th>Train No</th><th>Train Name</th><th>Departure Date & Time</th><th>Departure Station</th><th>Arrival Date & Time</th><th>Arrival Station</th><th>Seats Category</th></tr></thead>
+		  <tbody>${trainRows || '<tr><td colspan="7">No trains provided.</td></tr>'}</tbody>
+		</table>
+	  </div>
+	</section>
+
+  <section class="section">
+    <div class="cards">
+      <div class="card"><h3>Vehicle</h3><p>${escapeHtml(data.vehicle || '').replace(/\n/g, '<br>')}</p></div>
+      <div class="card"><h3>Meal Plan</h3><p>${escapeHtml(data.meals || '').replace(/\n/g, '<br>')}</p></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Inclusions</h2><ul>${inclusionsList || '<li>Not specified</li>'}</ul>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Exclusions</h2><ul>${exclusionsList || '<li>Not specified</li>'}</ul>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Important Notes</h2><p>${escapeHtml(data.notes || '').replace(/\n/g, '<br>')}</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Cancellation Policy</h2><p>${escapeHtml(data.cancellation || '').replace(/\n/g, '<br>')}</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Payment Details</h2><p>${escapeHtml(data.payment || '').replace(/\n/g, '<br>')}</p>
+  </section>
+</main>
+<footer style="margin-top:24px; text-align:center; color:#555;">
+  © 2025 Happy Holidayz Tours and Travels
+</footer>
+</body>
+</html>`;
+
+
+
+      // Open preview in new window
+      const previewWin = window.open();
+      previewWin.document.write(generatedHtml);
+      previewWin.document.close();
+
+      // Prepare download blob & filename
+      const fileName = (data.tourName && data.tourName.trim() !== '') ? sanitizeFilename(data.tourName) + '.html' : 'tour_page.html';
+      const blob = new Blob([generatedHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+
+      const downloadBtn = document.getElementById('downloadBtn');
+      downloadBtn.style.display = 'inline-block';
+      downloadBtn.onclick = function () {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        // keep object URL for potential reuse during session
+      };
+    });
+
+    // Small escaping helpers to avoid broken HTML from user input
+    function escapeHtml(str) { if (!str && str !== 0) return ''; return String(str).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); }
+    function escapeAttr(s) { if (!s && s !== 0) return ''; return s.replace(/"/g, '&quot;'); }
+
+
+    // --- Save / Load Logic ---
+
+    function showStatus(msg, isErr = false) {
+      const el = document.getElementById('statusMsg');
+      el.textContent = msg;
+      el.style.color = isErr ? 'red' : 'green';
+      setTimeout(() => el.textContent = '', 3000);
+    }
+
+    async function saveProject() {
+      const filename = document.getElementById('projectFilename').value;
+      if (!filename) { showStatus("Please enter a project name.", true); return; }
+
+      const form = document.getElementById('tourForm');
+      const fd = new FormData(form);
+      const data = {};
+      fd.forEach((v, k) => data[k] = v);
+
+      // Add filename to payload
+      const payload = {
+        filename: filename,
+        data: data
+      };
+
+      try {
+        const res = await fetch('/api/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (result.success) {
+          showStatus("Project saved successfully!");
+          refreshProjectList();
+        } else {
+          showStatus("Error: " + result.message, true);
+        }
+      } catch (e) { showStatus("Network Error: " + e, true); }
+    }
+
+    async function refreshProjectList() {
+      try {
+        const res = await fetch('/api/list');
+        const result = await res.json();
+        const sel = document.getElementById('savedProjectsList');
+        sel.innerHTML = '<option value="">Select a saved project...</option>';
+        if (result.files) {
+          result.files.forEach(f => {
+            const opt = document.createElement('option');
+            opt.value = f;
+            opt.textContent = f;
+            sel.appendChild(opt);
+          });
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadProject() {
+      const filename = document.getElementById('savedProjectsList').value;
+      if (!filename) { showStatus("Select a file first.", true); return; }
+
+      try {
+        const res = await fetch('/api/load/' + filename);
+        const json = await res.json();
+
+        // Check if wrapped in data.data (based on save structure) or root
+        const formData = json.data || json;
+
+        // 1. Restore Counts and Triggers
+        if (formData.numDays) {
+          document.getElementById('numDays').value = formData.numDays;
+          generateDayForms(parseInt(formData.numDays));
+        }
+        if (formData.numHotels) {
+          document.getElementById('numHotels').value = formData.numHotels;
+          generateHotelForms(parseInt(formData.numHotels));
+        }
+        if (formData.numFlights) {
+          document.getElementById('numFlights').value = formData.numFlights;
+          generateHotelForms(parseInt(formData.numFlights)); // original called this by mistake maybe? keeping assumed intent
+          generateFlightForms(parseInt(formData.numFlights));
+        }
+        if (formData.numTrains) {
+          document.getElementById('numTrains').value = formData.numTrains;
+          generateTrainForms(parseInt(formData.numTrains));
+        }
+
+        // 2. Populate all fields
+        const form = document.getElementById('tourForm');
+        Object.keys(formData).forEach(key => {
+          const field = form.elements[key];
+          if (field) {
+            // If radio/checkbox need special handling, but here mostly text/textarea
+            if (field.type === 'checkbox') {
+              field.checked = !!formData[key];
+            } else {
+              field.value = formData[key];
+            }
+          }
+        });
+
+        // Restore Project Name
+        document.getElementById('projectFilename').value = json.filename ? json.filename.replace('.json', '') : filename.replace('.json', '');
+
+        showStatus("Project loaded!");
+
+      } catch (e) { showStatus("Error loading: " + e, true); }
+    }
+
+    // Init
+    refreshProjectList();
+
+  </script>
+</body>
+
+</html>

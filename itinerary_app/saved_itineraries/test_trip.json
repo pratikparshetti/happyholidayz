@@ -1,0 +1,7 @@
+{
+    "filename": "test_trip",
+    "destination": "Tokyo",
+    "activities": {
+        "day_1": "Sushi"
+    }
+}
