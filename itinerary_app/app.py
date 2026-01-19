@@ -258,6 +258,8 @@ def generate_itinerary():
         {{
             "tourName": "Creative Tour Name for {destination}",
             "overview": "A brief 2-3 sentence overview of the trip.",
+            "inclusions": "Comprehensive list of at least 5-8 inclusions separated by semicolons (e.g. 3 Star Hotel Accommodation; Daily Breakfast; Airport Transfers; English Speaking Guide; All Entry Fees; GST; Taxes)",
+            "exclusions": "Comprehensive list of at least 5-8 exclusions separated by semicolons (e.g. International Flights; Visa Fees; Travel Insurance; Personal Expenses like laundry/tips; Lunch and Dinner; Optional Tours; Early Check-in)",
             "days": [
                 {{
                     "title": "Title ONLY (e.g. Arrival & City Tour). Do NOT include 'Day 1' prefix.",

@@ -689,6 +689,8 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
           // Populate Basic Info
           if (data.tourName) form.elements['tourName'].value = data.tourName;
           if (data.overview) form.elements['overview'].value = data.overview;
+          if (data.inclusions) form.elements['inclusions'].value = data.inclusions;
+          if (data.exclusions) form.elements['exclusions'].value = data.exclusions;
 
           // Set Days and Generate Forms
           const numDays = data.days.length;
