@@ -203,7 +203,8 @@
             <input type="number" id="aiDays" value="5" min="1" max="15">
           </div>
           <div class="col" style="align-self:end;">
-            <button type="button" class="btn" style="background:#d35400;" onclick="generateItinerary()">Generate Itinerary</button>
+            <button type="button" class="btn" style="background:#d35400;" onclick="generateItinerary()">Generate
+              Itinerary</button>
           </div>
         </div>
         <div id="aiStatus" style="margin-top:10px; font-weight:bold; color:#d35400;"></div>
@@ -267,7 +268,8 @@
 
       <h3>Hotel Details (Summary table)</h3>
       <div class="row">
-        <label class="block col">Number of Hotels <input type="number" id="numHotels" min="0" value="1"></label>
+        <label class="block col">Number of Hotels <input type="number" id="numHotels" name="numHotels" min="0"
+            value="1"></label>
         <div style="align-self:end">
           <button type="button" class="btn secondary" id="genHotelsBtn">Generate Hotel Fields</button>
         </div>
@@ -278,7 +280,8 @@
 
       <h3>Flight Details (Summary table)</h3>
       <div class="row">
-        <label class="block col">Number of Flights <input type="number" id="numFlights" min="0" value="0"></label>
+        <label class="block col">Number of Flights <input type="number" id="numFlights" name="numFlights" min="0"
+            value="0"></label>
         <div style="align-self:end">
           <button type="button" class="btn secondary" id="genFlightsBtn">Generate Flight Fields</button>
         </div>
@@ -289,7 +292,8 @@
 
       <h3>Train Details (Summary table)</h3>
       <div class="row">
-        <label class="block col">Number of Trains <input type="number" id="numTrains" min="0" value="0"></label>
+        <label class="block col">Number of Trains <input type="number" id="numTrains" name="numTrains" min="0"
+            value="0"></label>
         <div style="align-self:end">
           <button type="button" class="btn secondary" id="genTrainsBtn">Generate Train Fields</button>
         </div>
@@ -662,55 +666,55 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
 
     // --- AI Generation Logic ---
     async function generateItinerary() {
-        const dest = document.getElementById('aiDestination').value;
-        const days = document.getElementById('aiDays').value;
-        const statusEl = document.getElementById('aiStatus');
-        
-        if(!dest) { statusEl.textContent = "Please enter a destination."; return; }
-        
-        statusEl.textContent = "Generating itinerary... this may take a few seconds 🤖";
-        
-        try {
-            const res = await fetch('/api/generate', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ destination: dest, days: days })
-            });
-            const result = await res.json();
-            
-            if(result.success) {
-                const data = result.data;
-                const form = document.getElementById('tourForm');
-                
-                // Populate Basic Info
-                if(data.tourName) form.elements['tourName'].value = data.tourName;
-                if(data.overview) form.elements['overview'].value = data.overview;
-                
-                // Set Days and Generate Forms
-                const numDays = data.days.length;
-                document.getElementById('numDays').value = numDays;
-                
-                // Trigger day form generation
-                generateDayForms(numDays);
-                
-                // Populate Days
-                data.days.forEach((day, index) => {
-                    const i = index + 1;
-                    const titleInput = form.elements['dayTitle' + i];
-                    const descInput = form.elements['dayDesc' + i];
-                    
-                    if(titleInput) titleInput.value = day.title;
-                    if(descInput) descInput.value = day.description;
-                });
-                
-                statusEl.textContent = "Itinerary generated successfully! ✨";
-                setTimeout(() => statusEl.textContent = '', 5000);
-            } else {
-                statusEl.textContent = "Error: " + result.message;
-            }
-        } catch(e) {
-            statusEl.textContent = "Network Error: " + e;
+      const dest = document.getElementById('aiDestination').value;
+      const days = document.getElementById('aiDays').value;
+      const statusEl = document.getElementById('aiStatus');
+
+      if (!dest) { statusEl.textContent = "Please enter a destination."; return; }
+
+      statusEl.textContent = "Generating itinerary... this may take a few seconds 🤖";
+
+      try {
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ destination: dest, days: days })
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          const data = result.data;
+          const form = document.getElementById('tourForm');
+
+          // Populate Basic Info
+          if (data.tourName) form.elements['tourName'].value = data.tourName;
+          if (data.overview) form.elements['overview'].value = data.overview;
+
+          // Set Days and Generate Forms
+          const numDays = data.days.length;
+          document.getElementById('numDays').value = numDays;
+
+          // Trigger day form generation
+          generateDayForms(numDays);
+
+          // Populate Days
+          data.days.forEach((day, index) => {
+            const i = index + 1;
+            const titleInput = form.elements['dayTitle' + i];
+            const descInput = form.elements['dayDesc' + i];
+
+            if (titleInput) titleInput.value = day.title;
+            if (descInput) descInput.value = day.description;
+          });
+
+          statusEl.textContent = "Itinerary generated successfully! ✨";
+          setTimeout(() => statusEl.textContent = '', 5000);
+        } else {
+          statusEl.textContent = "Error: " + result.message;
         }
+      } catch (e) {
+        statusEl.textContent = "Network Error: " + e;
+      }
     }
 
     async function saveProject() {
@@ -783,7 +787,6 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
         }
         if (formData.numFlights) {
           document.getElementById('numFlights').value = formData.numFlights;
-          generateHotelForms(parseInt(formData.numFlights)); // original called this by mistake maybe? keeping assumed intent
           generateFlightForms(parseInt(formData.numFlights));
         }
         if (formData.numTrains) {
