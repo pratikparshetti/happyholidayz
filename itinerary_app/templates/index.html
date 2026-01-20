@@ -313,10 +313,21 @@
       <label class="block">Exclusions (semi colon ; separated) <textarea name="exclusions"
           placeholder="Flights, Visa, Personal expenses"></textarea></label>
       <label class="block">Important Notes <textarea name="notes"></textarea></label>
-      <label class="block">Cancellation Policy <textarea name="cancellation"></textarea></label>
+      <label class="block">Cancellation Policy <textarea name="cancellation">
+• Any confirmed package booking cancellation will attract Rs 2000/- as an administrative charge.
+• Any confirmed package booking cancelled within 0-15 days before arrival date will attract 100% of the total package amount as retention charges.
+• Any confirmed package booking cancelled within 15-30 days before arrival date will attract 50% of the total package amount as retention charges.
+• Any confirmed package booking cancelled within 30-60 days will attract 25% of the total package amount as retention charges.
+      </textarea></label>
       <label class="block">Payment Details <textarea name="payment"></textarea></label>
+      <div style="margin-top:10px;">
+        <label class="block">Payment QR Code</label>
+        <img src="/static/Payment_QR.jpeg" alt="Payment QR"
+          style="max-width:200px; border:1px solid #ccc; border-radius:8px;">
+      </div>
 
       <div class="actions">
+
         <button class="btn" type="submit">Generate & Preview</button>
         <button class="btn secondary" type="button" id="downloadBtn" style="display:none">Download Generated
           HTML</button>
@@ -616,7 +627,11 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
   </section>
 
   <section class="section">
-    <h2 class="section-title">Payment Details</h2><p>${escapeHtml(data.payment || '').replace(/\n/g, '<br>')}</p>
+    <h2 class="section-title">Payment Details</h2>
+    <p>${escapeHtml(data.payment || '').replace(/\n/g, '<br>')}</p>
+    <div style="margin-top:10px;">
+      <img src="/static/Payment_QR.jpeg" alt="Payment QR" style="max-width:300px; display:block;">
+    </div>
   </section>
 </main>
 <footer style="margin-top:24px; text-align:center; color:#555;">
