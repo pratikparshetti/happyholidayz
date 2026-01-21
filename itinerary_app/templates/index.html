@@ -460,6 +460,31 @@
     genFlightsBtn.addEventListener('click', () => generateFlightForms(parseInt(numFlightsInput.value) || 0));
     genTrainsBtn.addEventListener('click', () => generateTrainForms(parseInt(numTrainsInput.value) || 0));
 
+    // Date formatting helpers
+    function formatHotelDate(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const day = date.getDate();
+      const month = months[date.getMonth()];
+      const year = String(date.getFullYear()).slice(-2);
+      return `${day} ${month} ${year}`;
+    }
+
+    function formatFlightTrainDateTime(datetimeStr) {
+      if (!datetimeStr) return '';
+      const date = new Date(datetimeStr);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+      const day = date.getDate();
+      const month = months[date.getMonth()];
+      const year = String(date.getFullYear()).slice(-2);
+      const dayName = days[date.getDay()];
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${day} ${month} ${year}, ${dayName}, ${hours}:${minutes}`;
+    }
+
     // Main submit handler - generates HTML and opens preview and enables download
     document.getElementById('tourForm').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -489,8 +514,8 @@
         hotelRows += `<tr>
       <td>${escapeHtml(data['hotelName' + i] || '')}</td>
       <td>${escapeHtml(data['roomType' + i] || '')}</td>
-      <td>${escapeHtml(data['checkIn' + i] || '')}</td>
-      <td>${escapeHtml(data['checkOut' + i] || '')}</td>
+      <td>${escapeHtml(formatHotelDate(data['checkIn' + i]))}</td>
+      <td>${escapeHtml(formatHotelDate(data['checkOut' + i]))}</td>
       <td>${escapeHtml(data['noRooms' + i] || '')}</td>
       <td>${escapeHtml(data['nights' + i] || '')}</td>
       <td>${escapeHtml(data['city' + i] || '')}</td>
@@ -500,12 +525,12 @@
       let flightRows = '', trainRows = '';
       const flights = parseInt(document.getElementById('numFlights').value || 0);
       for (let i = 1; i <= flights; i++) {
-        flightRows += `<tr><td>${escapeHtml(data[`flightNo${i}`] || '')}</td><td>${escapeHtml(data[`flightDepDateTime${i}`] || '')}</td><td>${escapeHtml(data[`flightDepAirport${i}`] || '')}</td><td>${escapeHtml(data[`flightArrDateTime${i}`] || '')}</td><td>${escapeHtml(data[`flightArrAirport${i}`] || '')}</td></tr>`;
+        flightRows += `<tr><td>${escapeHtml(data[`flightNo${i}`] || '')}</td><td>${escapeHtml(formatFlightTrainDateTime(data[`flightDepDateTime${i}`]))}</td><td>${escapeHtml(data[`flightDepAirport${i}`] || '')}</td><td>${escapeHtml(formatFlightTrainDateTime(data[`flightArrDateTime${i}`]))}</td><td>${escapeHtml(data[`flightArrAirport${i}`] || '')}</td></tr>`;
       }
 
       const trains = parseInt(document.getElementById('numTrains').value || 0);
       for (let i = 1; i <= trains; i++) {
-        trainRows += `<tr><td>${escapeHtml(data[`trainNo${i}`] || '')}</td><td>${escapeHtml(data[`trainName${i}`] || '')}</td><td>${escapeHtml(data[`trainDepDateTime${i}`] || '')}</td><td>${escapeHtml(data[`trainDepStation${i}`] || '')}</td><td>${escapeHtml(data[`trainArrDateTime${i}`] || '')}</td><td>${escapeHtml(data[`trainArrStation${i}`] || '')}</td><td>${escapeHtml(data[`trainSeats${i}`] || '')}</td></tr>`;
+        trainRows += `<tr><td>${escapeHtml(data[`trainNo${i}`] || '')}</td><td>${escapeHtml(data[`trainName${i}`] || '')}</td><td>${escapeHtml(formatFlightTrainDateTime(data[`trainDepDateTime${i}`]))}</td><td>${escapeHtml(data[`trainDepStation${i}`] || '')}</td><td>${escapeHtml(formatFlightTrainDateTime(data[`trainArrDateTime${i}`]))}</td><td>${escapeHtml(data[`trainArrStation${i}`] || '')}</td><td>${escapeHtml(data[`trainSeats${i}`] || '')}</td></tr>`;
       }
 
       const inclusionsList = (data.inclusions || '').split(';').map(s => s.trim()).filter(Boolean).map(s => `<li>${escapeHtml(s)}</li>`).join('');
