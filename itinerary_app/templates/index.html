@@ -500,8 +500,20 @@
         const date = data['dayDate' + i] || '';
         const desc = data['dayDesc' + i] || '';
         const img = data['dayImg' + i] || '';
+
+        // Format date as DD MMM YYYY
+        let formattedDate = '';
+        if (date) {
+          const dateObj = new Date(date);
+          const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+          const day = dateObj.getDate();
+          const month = months[dateObj.getMonth()];
+          const year = dateObj.getFullYear();
+          formattedDate = `${day} ${month} ${year}`;
+        }
+
         dayHtml += `<div class="day-card">
-      <h3>Day ${i} – ${escapeHtml(title)} <span class="muted">(${escapeHtml(date)})</span></h3>
+      <h3>Day ${i} ${formattedDate ? `(${formattedDate})` : ''} – ${escapeHtml(title)}</h3>
       ${img ? `<img src="${escapeAttr(img)}" alt="Day ${i} image" />` : ''}
       <p>${escapeHtml(desc).replace(/\n/g, '<br>')}</p>
     </div>`;
