@@ -394,17 +394,53 @@
           <label class="block col">Room Type <input type="text" name="roomType${i}" required></label>
         </div>
         <div class="row" style="margin-top:8px">
-          <label class="block col">Check-in <input type="date" name="checkIn${i}" required></label>
-          <label class="block col">Check-out <input type="date" name="checkOut${i}" required></label>
+          <label class="block col">Check-in <input type="date" name="checkIn${i}" class="hotel-checkin" data-hotel="${i}" required></label>
+          <label class="block col">Check-out <input type="date" name="checkOut${i}" class="hotel-checkout" data-hotel="${i}" required></label>
         </div>
         <div class="row" style="margin-top:8px">
           <label class="block col">No. of Rooms <input type="number" min="1" name="noRooms${i}" value="1" required></label>
-          <label class="block col">Nights <input type="number" min="1" name="nights${i}" value="1" required></label>
+          <label class="block col">Nights <input type="number" min="1" name="nights${i}" class="hotel-nights" data-hotel="${i}" value="1" required></label>
         </div>
         <label class="block">City <input type="text" name="city${i}" required></label>
       </div>
     `);
         hotelsContainer.appendChild(node);
+
+        // Add event listeners for auto-calculation
+        const checkInInput = node.querySelector('.hotel-checkin');
+        const checkOutInput = node.querySelector('.hotel-checkout');
+        const nightsInput = node.querySelector('.hotel-nights');
+
+        // When check-in or nights change, update checkout
+        const updateCheckout = () => {
+          const checkIn = checkInInput.value;
+          const nights = parseInt(nightsInput.value);
+          if (checkIn && nights > 0) {
+            const checkInDate = new Date(checkIn);
+            const checkOutDate = new Date(checkInDate);
+            checkOutDate.setDate(checkInDate.getDate() + nights);
+            checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+          }
+        };
+
+        // When checkout or check-in change, update nights
+        const updateNights = () => {
+          const checkIn = checkInInput.value;
+          const checkOut = checkOutInput.value;
+          if (checkIn && checkOut) {
+            const checkInDate = new Date(checkIn);
+            const checkOutDate = new Date(checkOut);
+            const diffTime = checkOutDate - checkInDate;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays > 0) {
+              nightsInput.value = diffDays;
+            }
+          }
+        };
+
+        checkInInput.addEventListener('change', updateCheckout);
+        nightsInput.addEventListener('change', updateCheckout);
+        checkOutInput.addEventListener('change', updateNights);
       }
     }
 
