@@ -249,11 +249,18 @@
           required></label>
       <label class="block">Overview <textarea name="overview" placeholder="Short overview for the tour"
           required></textarea></label>
+      <label class="block col">Number of Days <input type="number" name="numDays" id="numDays" min="1" value="1"
+          required></label>
+
+      <h3>Package Cost Options</h3>
       <div class="row">
-        <label class="block col">Tour Price (INR) <input type="text" name="price" placeholder="50000" required></label>
-        <label class="block col">Number of Days <input type="number" name="numDays" id="numDays" min="1" value="1"
-            required></label>
+        <label class="block col">Number of Package Options <input type="number" id="numPackages" name="numPackages"
+            min="1" value="1"></label>
+        <div style="align-self:end">
+          <button type="button" class="btn secondary" id="genPackagesBtn">Generate Package Fields</button>
+        </div>
       </div>
+      <div id="packagesContainer" style="margin-top:10px"></div>
 
       <label class="block">Tour Start Date
         <input type="date" name="startDate" id="startDate" required>
@@ -519,11 +526,34 @@
       }
     }
 
+    // Packages dynamic
+    const packagesContainer = document.getElementById('packagesContainer');
+    const genPackagesBtn = document.getElementById('genPackagesBtn');
+    const numPackagesInput = document.getElementById('numPackages');
+
+    function generatePackageForms(n) {
+      packagesContainer.innerHTML = '';
+      for (let i = 1; i <= n; i++) {
+        const node = el(`
+      <div class="hotel-form">
+        <strong>Package Option ${i}</strong>
+        <div class="row" style="margin-top:8px">
+          <label class="block col">Option Name <input type="text" name="packageName${i}" value="Option ${i}" required></label>
+          <label class="block col">Price (INR) <input type="text" name="packagePrice${i}" placeholder="50000" required></label>
+        </div>
+        <label class="block">Description/Details <textarea name="packageDesc${i}" placeholder="Optional details about this package option"></textarea></label>
+      </div>
+    `);
+        packagesContainer.appendChild(node);
+      }
+    }
+
     // Initialize
     generateDayForms(parseInt(numDaysInput.value) || 1);
     generateHotelForms(parseInt(numHotelsInput.value) || 0);
     generateFlightForms(parseInt(numFlightsInput.value) || 0);
     generateTrainForms(parseInt(numTrainsInput.value) || 0);
+    generatePackageForms(parseInt(numPackagesInput.value) || 1);
 
     // Event listeners
     numDaysInput.addEventListener('change', () => { generateDayForms(parseInt(numDaysInput.value) || 1); autoFillDates(); });
@@ -531,6 +561,7 @@
     genHotelsBtn.addEventListener('click', () => generateHotelForms(parseInt(numHotelsInput.value) || 0));
     genFlightsBtn.addEventListener('click', () => generateFlightForms(parseInt(numFlightsInput.value) || 0));
     genTrainsBtn.addEventListener('click', () => generateTrainForms(parseInt(numTrainsInput.value) || 0));
+    genPackagesBtn.addEventListener('click', () => generatePackageForms(parseInt(numPackagesInput.value) || 1));
 
     // Date formatting helpers
     function formatHotelDate(dateStr) {
@@ -620,6 +651,22 @@
       const inclusionsList = (data.inclusions || '').split(';').map(s => s.trim()).filter(Boolean).map(s => `<li>${escapeHtml(s)}</li>`).join('');
       const exclusionsList = (data.exclusions || '').split(';').map(s => s.trim()).filter(Boolean).map(s => `<li>${escapeHtml(s)}</li>`).join('');
 
+      // Build package options HTML
+      const packages = parseInt(document.getElementById('numPackages').value || 1);
+      let packageOptionsHtml = '';
+      for (let i = 1; i <= packages; i++) {
+        const pkgName = data['packageName' + i] || `Option ${i}`;
+        const pkgPrice = data['packagePrice' + i] || '';
+        const pkgDesc = data['packageDesc' + i] || '';
+        packageOptionsHtml += `
+          <div class="card" style="margin-bottom:12px;">
+            <h3 style="margin-top:0; color:var(--accent2);">${escapeHtml(pkgName)}</h3>
+            <div class="price-box" style="margin:8px 0;">💰 ₹${escapeHtml(pkgPrice)}</div>
+            ${pkgDesc ? `<p style="margin-top:8px; color:#555;">${escapeHtml(pkgDesc).replace(/\n/g, '<br>')}</p>` : ''}
+          </div>
+        `;
+      }
+
       // Generated page HTML (keeps the modern yellow-orange styling)
       const generatedHtml = `<!doctype html>
 <html lang="en">
@@ -672,7 +719,11 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
   <section class="section">
     <h2 class="section-title">Overview</h2>
     <p>${escapeHtml(data.overview || '').replace(/\n/g, '<br>')}</p>
-    <div class="price-box">💰 ₹${escapeHtml(data.price || '')}</div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Package Options</h2>
+    ${packageOptionsHtml}
   </section>
 
   <section class="section">
@@ -918,6 +969,10 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
         if (formData.numTrains) {
           document.getElementById('numTrains').value = formData.numTrains;
           generateTrainForms(parseInt(formData.numTrains));
+        }
+        if (formData.numPackages) {
+          document.getElementById('numPackages').value = formData.numPackages;
+          generatePackageForms(parseInt(formData.numPackages));
         }
 
         // 2. Populate all fields
