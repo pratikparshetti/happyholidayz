@@ -420,6 +420,9 @@
             const checkOutDate = new Date(checkInDate);
             checkOutDate.setDate(checkInDate.getDate() + nights);
             checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+
+            // Cascade to next hotel's check-in
+            cascadeToNextHotel(i, checkOutDate);
           }
         };
 
@@ -440,9 +443,42 @@
 
         checkInInput.addEventListener('change', updateCheckout);
         nightsInput.addEventListener('change', updateCheckout);
-        checkOutInput.addEventListener('change', updateNights);
+        checkOutInput.addEventListener('change', () => {
+          updateNights();
+          const checkOut = checkOutInput.value;
+          if (checkOut) {
+            cascadeToNextHotel(i, new Date(checkOut));
+          }
+        });
       }
     }
+
+    // Helper function to cascade checkout date to next hotel's check-in
+    function cascadeToNextHotel(currentHotelIndex, checkOutDate) {
+      const nextHotelIndex = currentHotelIndex + 1;
+      const nextCheckInInput = document.querySelector(`input[name="checkIn${nextHotelIndex}"]`);
+
+      if (nextCheckInInput) {
+        nextCheckInInput.value = checkOutDate.toISOString().split('T')[0];
+
+        // Trigger the next hotel's checkout calculation if nights are set
+        const nextNightsInput = document.querySelector(`input[name="nights${nextHotelIndex}"]`);
+        const nextCheckOutInput = document.querySelector(`input[name="checkOut${nextHotelIndex}"]`);
+
+        if (nextNightsInput && nextCheckOutInput) {
+          const nights = parseInt(nextNightsInput.value);
+          if (nights > 0) {
+            const nextCheckOutDate = new Date(checkOutDate);
+            nextCheckOutDate.setDate(checkOutDate.getDate() + nights);
+            nextCheckOutInput.value = nextCheckOutDate.toISOString().split('T')[0];
+
+            // Recursively cascade to the next hotel
+            cascadeToNextHotel(nextHotelIndex, nextCheckOutDate);
+          }
+        }
+      }
+    }
+
 
     // Flights dynamic
     const flightsContainer = document.getElementById('flightsContainer');
