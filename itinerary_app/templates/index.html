@@ -177,6 +177,27 @@
     .muted {
       color: var(--muted)
     }
+
+    .checkbox-group {
+      display: flex;
+      gap: 20px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
   </style>
 </head>
 
@@ -313,8 +334,12 @@
       <h3>Other Details</h3>
       <label class="block">Vehicle Details <textarea name="vehicle"
           placeholder="Private AC transfers, local sightseeing vehicle etc."></textarea></label>
-      <label class="block">Meal Plan <textarea name="meals"
-          placeholder="e.g. Breakfast & Dinner included; Lunch on island days."></textarea></label>
+      <label class="block">Meal Plan</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="meal_breakfast" value="Breakfast"> Breakfast</label>
+        <label><input type="checkbox" name="meal_lunch" value="Lunch"> Lunch</label>
+        <label><input type="checkbox" name="meal_dinner" value="Dinner"> Dinner</label>
+      </div>
       <label class="block">Inclusions (semi colon ; separated) <textarea name="inclusions"
           placeholder="Accommodation, Transfers, Sightseeing"></textarea></label>
       <label class="block">Exclusions (semi colon ; separated) <textarea name="exclusions"
@@ -613,6 +638,13 @@
       const fd = new FormData(this);
       const data = {};
       fd.forEach((v, k) => data[k] = v);
+
+      // Construct Meal Plan string from checkboxes
+      const selectedMeals = [];
+      if (fd.get('meal_breakfast')) selectedMeals.push('Breakfast');
+      if (fd.get('meal_lunch')) selectedMeals.push('Lunch');
+      if (fd.get('meal_dinner')) selectedMeals.push('Dinner');
+      data.meals = selectedMeals.length > 0 ? selectedMeals.join(', ') : 'No Meal Plan';
 
       // Build day HTML
       const days = parseInt(data.numDays || 0);
@@ -996,6 +1028,10 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
 
         // 2. Populate all fields
         const form = document.getElementById('tourForm');
+        // Reset checkboxes as they are not present in formData if unchecked
+        Array.from(form.elements).forEach(field => {
+          if (field.type === 'checkbox') field.checked = false;
+        });
         Object.keys(formData).forEach(key => {
           const field = form.elements[key];
           if (field) {
@@ -1005,6 +1041,13 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
             } else {
               field.value = formData[key];
             }
+          } else if (key === 'meals' && formData[key]) {
+            // Backward compatibility: If it was the old 'meals' text field, 
+            // parse for strings to check the new checkboxes
+            const m = String(formData[key]).toLowerCase();
+            if (m.includes("breakfast".toLowerCase())) form.elements['meal_breakfast'].checked = true;
+            if (m.includes("lunch".toLowerCase())) form.elements['meal_lunch'].checked = true;
+            if (m.includes("dinner".toLowerCase())) form.elements['meal_dinner'].checked = true;
           }
         });
 
