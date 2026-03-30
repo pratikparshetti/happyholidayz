@@ -756,6 +756,7 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
   body { background: #fff !important; }
   .day-card { border: 1px solid #f0e6b5; box-shadow: none; }
   .card, .customer-box { border: 1px solid #f0e6b5; box-shadow: none; }
+  .payment-qr { max-height: 400px; width: auto; display: block; margin: 10px 0; }
   header.hero { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 </style>
@@ -850,7 +851,7 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
     <h2 class="section-title">Payment Details</h2>
     <p>${escapeHtml(data.payment || '').replace(/\n/g, '<br>')}</p>
     <div style="margin-top:10px;">
-      <img src="/static/Payment_QR.jpeg" alt="Payment QR" style="max-width:300px; display:block;">
+      <img src="/static/Payment_QR.jpeg" alt="Payment QR" class="payment-qr" style="max-width:300px; display:block;">
     </div>
   </section>
 </main>
