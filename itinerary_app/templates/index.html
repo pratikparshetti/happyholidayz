@@ -847,17 +847,19 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
     <h2 class="section-title">Cancellation Policy</h2><p>${escapeHtml(data.cancellation || '').replace(/\n/g, '<br>')}</p>
   </section>
 
-  <section class="section">
-    <h2 class="section-title">Payment Details</h2>
-    <p>${escapeHtml(data.payment || '').replace(/\n/g, '<br>')}</p>
-    <div style="margin-top:10px;">
-      <img src="/static/Payment_QR.jpeg" alt="Payment QR" class="payment-qr" style="max-width:300px; display:block;">
-    </div>
-  </section>
+  <div class="print-footer-group" style="break-inside: avoid;">
+    <section class="section">
+      <h2 class="section-title">Payment Details</h2>
+      <p>${escapeHtml(data.payment || '').replace(/\n/g, '<br>')}</p>
+      <div style="margin-top:10px;">
+        <img src="/static/Payment_QR.jpeg" alt="Payment QR" class="payment-qr" style="max-width:300px; display:block;">
+      </div>
+    </section>
+    <footer style="margin-top:24px; text-align:center; color:#555;">
+      © 2025 Happy Holidayz Tours and Travels
+    </footer>
+  </div>
 </main>
-<footer style="margin-top:24px; text-align:center; color:#555;">
-  © 2025 Happy Holidayz Tours and Travels
-</footer>
 </body>
 </html>`;
 
