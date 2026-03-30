@@ -357,6 +357,21 @@
         next.setDate(base.getDate() + i);
         d.value = next.toISOString().split("T")[0];
       });
+
+      const firstHotelCheckIn = document.querySelector('input[name="checkIn1"]');
+      if (firstHotelCheckIn && !firstHotelCheckIn.value) {
+        firstHotelCheckIn.value = start;
+        firstHotelCheckIn.dispatchEvent(new Event('change'));
+      }
+
+      document.querySelectorAll(".auto-dep-date").forEach(d => {
+        if (!d.value) {
+          d.value = start + "T00:00";
+        } else {
+          const timePart = d.value.split("T")[1] || "00:00";
+          d.value = start + "T" + timePart;
+        }
+      });
     }
 
     function el(html) { const template = document.createElement('template'); template.innerHTML = html.trim(); return template.content.firstChild; }
@@ -494,11 +509,13 @@
 
     function generateFlightForms(n) {
       flightsContainer.innerHTML = '';
+      const start = document.getElementById("startDate")?.value || "";
+      const defaultDateTime = start ? start + "T00:00" : "";
       for (let i = 1; i <= n; i++) {
         const node = el(`
       <div class="hotel-form">
         <strong>Flight ${i}</strong>
-        <div class='row'><label class='block col'>Flight Number<input type='text' name='flightNo${i}'></label><label class='block col'>Departure Date & Time<input type='datetime-local' name='flightDepDateTime${i}'></label></div>
+        <div class='row'><label class='block col'>Flight Number<input type='text' name='flightNo${i}'></label><label class='block col'>Departure Date & Time<input type='datetime-local' name='flightDepDateTime${i}' class='auto-dep-date' value='${defaultDateTime}'></label></div>
     <div class='row'><label class='block col'>Departure Airport<input type='text' name='flightDepAirport${i}'></label><label class='block col'>Arrival Date & Time<input type='datetime-local' name='flightArrDateTime${i}'></label></div>
     <label class='block'>Arrival Airport<input type='text' name='flightArrAirport${i}'></label></div>
     `);
@@ -513,12 +530,14 @@
 
     function generateTrainForms(n) {
       trainsContainer.innerHTML = '';
+      const start = document.getElementById("startDate")?.value || "";
+      const defaultDateTime = start ? start + "T00:00" : "";
       for (let i = 1; i <= n; i++) {
         const node = el(`
       <div class="hotel-form">
         <strong>Train ${i}</strong>
         <div class='row'><label class='block col'>Train No<input type='text' name='trainNo${i}'></label><label class='block col'>Train Name<input type='text' name='trainName${i}'></label></div>
-    <div class='row'><label class='block col'>Departure Date & Time<input type='datetime-local' name='trainDepDateTime${i}'></label><label class='block col'>Departure Station<input type='text' name='trainDepStation${i}'></label></div>
+    <div class='row'><label class='block col'>Departure Date & Time<input type='datetime-local' name='trainDepDateTime${i}' class='auto-dep-date' value='${defaultDateTime}'></label><label class='block col'>Departure Station<input type='text' name='trainDepStation${i}'></label></div>
     <div class='row'><label class='block col'>Arrival Date & Time<input type='datetime-local' name='trainArrDateTime${i}'></label><label class='block col'>Arrival Station<input type='text' name='trainArrStation${i}'></label></div>
     <label class='block'>Seats Category<select name='trainSeats${i}' required><option value=''>Select</option><option value='CC'>CC</option><option value='SL'>SL</option><option value='3AC'>3AC</option><option value='2AC'>2AC</option><option value='1AC'>1AC</option></select></label></div>
     `);
