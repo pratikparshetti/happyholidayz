@@ -739,7 +739,7 @@ header.hero h1{margin:0;font-size:2rem}
 .card:hover{transform:translateY(-6px)}
 .day-card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 6px 18px rgba(14,30,37,0.04)}
 .day-card img{width:50%;display:block;margin:12px auto;border-radius:10px;object-fit:cover;box-shadow:0 8px 20px rgba(17,24,39,0.06)}
-h2.section-title{color:var(--accent2);border-bottom:3px solid #ffe8a7;display:inline-block;padding-bottom:6px;margin-bottom:12px}
+h2.section-title{color:var(--accent2);border-bottom:3px solid #ffe8a7;display:inline-block;padding-bottom:6px;margin-bottom:12px;break-after:avoid;}
 .table-wrap{overflow:auto;border-radius:12px;margin-top:12px}
 table{width:100%;border-collapse:collapse;min-width:700px}
 th,td{padding:10px 12px;border:1px solid #f0e6b5;text-align:center}
@@ -748,12 +748,21 @@ tbody tr:nth-child(even){background:var(--cream)}
 tbody tr:hover{background:#ffeebb}
 ul{padding-left:18px}
 footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;padding:16px;text-align:center;margin-top:20px}
-@media(max-width:900px){.day-card img{width:90%}.cards{flex-direction:column}table{min-width:unset}}
+@media(max-width:900px){.day-card img{width:90%}.cards{flex-direction:column}}
+@media print {
+  .day-card, .section, .card, tr, .customer-box { break-inside: avoid; page-break-inside: avoid; }
+  h1, h2, h3, header { break-after: avoid; }
+  img { break-inside: avoid; max-width: 100% !important; }
+  body { background: #fff !important; }
+  .day-card { border: 1px solid #f0e6b5; box-shadow: none; }
+  .card, .customer-box { border: 1px solid #f0e6b5; box-shadow: none; }
+  header.hero { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
 </style>
 </head>
 <body>
 
-<header style="margin-bottom:24px; text-align:center;">
+<header style="margin-bottom:24px; text-align:center; break-after: avoid;">
   <img src="https://happyholidayztours.in/logo.png" alt="Logo" style="height:80px;">
   <h1>Happy Holidayz Tours and Travels</h1>
   <p>Plot no 25, Dr J J Magdum Housing Society, Jaysingpur – 416101, Dist. Kolhapur, Maharashtra, India</p>
