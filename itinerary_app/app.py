@@ -268,6 +268,108 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 """
 
+def repair_truncated_json(s: str) -> str:
+    """Attempts to repair truncated JSON strings by closing open quotes, lists, and objects."""
+    s = s.strip()
+    if not s:
+        return s
+
+    in_string = False
+    escaped = False
+    new_chars = []
+    
+    for char in s:
+        if escaped:
+            escaped = False
+            new_chars.append(char)
+            continue
+        if char == '\\':
+            escaped = True
+            new_chars.append(char)
+            continue
+        if char == '"':
+            in_string = not in_string
+        new_chars.append(char)
+        
+    fixed_s = "".join(new_chars)
+    if in_string:
+        fixed_s += '"'
+        
+    fixed_s = re.sub(r',\s*([}\]])', r'\1', fixed_s)
+
+    stack = []
+    in_str = False
+    esc = False
+    
+    for char in fixed_s:
+        if esc:
+            esc = False
+            continue
+        if char == '\\':
+            esc = True
+            continue
+        if char == '"':
+            in_str = not in_str
+            continue
+        if not in_str:
+            if char in '{[':
+                stack.append(char)
+            elif char == '}':
+                if stack and stack[-1] == '{':
+                    stack.pop()
+            elif char == ']':
+                if stack and stack[-1] == '[':
+                    stack.pop()
+                    
+    for open_char in reversed(stack):
+        if open_char == '{':
+            fixed_s += '}'
+        elif open_char == '[':
+            fixed_s += ']'
+            
+    return fixed_s
+
+def robust_json_parse(text: str) -> dict:
+    """Robustly extracts and parses JSON even if wrapped in markdown or truncated by model max tokens."""
+    if not text or not text.strip():
+        raise ValueError("Empty response received from AI model.")
+        
+    cleaned = re.sub(r'```(?:json)?\s*', '', text, flags=re.IGNORECASE)
+    cleaned = re.sub(r'```', '', cleaned).strip()
+    
+    first_brace = cleaned.find('{')
+    last_brace = cleaned.rfind('}')
+    
+    if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+        candidate = cleaned[first_brace:last_brace+1]
+    elif first_brace != -1:
+        candidate = cleaned[first_brace:]
+    else:
+        candidate = cleaned
+
+    candidate_cleaned = re.sub(r',\s*([}\]])', r'\1', candidate)
+    
+    try:
+        return json.loads(candidate_cleaned)
+    except json.JSONDecodeError:
+        pass
+        
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        pass
+        
+    repaired = repair_truncated_json(candidate)
+    repaired_cleaned = re.sub(r',\s*([}\]])', r'\1', repaired)
+    
+    try:
+        return json.loads(repaired_cleaned)
+    except json.JSONDecodeError:
+        pass
+        
+    cleaned_ctrl = re.sub(r'[\x00-\x1f\x7f-\x9f]', ' ', repaired_cleaned)
+    return json.loads(cleaned_ctrl)
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -301,14 +403,14 @@ def generate_itinerary():
         genai.configure(api_key=api_key)
 
         prompt = f"""
-        Generate a {days}-day travel itinerary for {destination}. 
+        Generate a comprehensive {days}-day travel itinerary for {destination}. 
         Return ONLY valid JSON in the following format:
         
         {{
             "tourName": "Creative Tour Name for {destination}",
             "overview": "A brief 2-3 sentence overview of the trip.",
-            "inclusions": "Comprehensive list of at least 5-8 inclusions separated by semicolons (e.g. 3 Star Hotel Accommodation; Daily Breakfast; Airport Transfers; English Speaking Guide; All Entry Fees; GST; Taxes)",
-            "exclusions": "Comprehensive list of at least 5-8 exclusions separated by semicolons (e.g. International Flights; Visa Fees; Travel Insurance; Personal Expenses like laundry/tips; Lunch and Dinner; Optional Tours; Early Check-in)",
+            "inclusions": "Comprehensive list of 5-8 inclusions separated by semicolons (e.g. 3 Star Hotel Accommodation; Daily Breakfast; Airport Transfers; English Speaking Guide; All Entry Fees; GST; Taxes)",
+            "exclusions": "Comprehensive list of 5-8 exclusions separated by semicolons (e.g. International Flights; Visa Fees; Travel Insurance; Personal Expenses like laundry/tips; Lunch and Dinner; Optional Tours; Early Check-in)",
             "days": [
                 {{
                     "title": "Title ONLY (e.g. Arrival & City Tour). Do NOT include 'Day 1' prefix.",
@@ -317,7 +419,10 @@ def generate_itinerary():
             ]
         }}
         
-        Do not include markdown formatting like ```json or ```. Just the raw JSON.
+        IMPORTANT CRITICAL RULES:
+        - Must generate exactly {days} day items inside the "days" array.
+        - Ensure every string property is properly closed with quotes.
+        - Do not include markdown formatting like ```json or ```. Just raw JSON.
         """
         
         models_to_try = [
@@ -337,9 +442,9 @@ def generate_itinerary():
                     prompt,
                     generation_config=genai.types.GenerationConfig(
                         temperature=0.7,
-                        max_output_tokens=2048
+                        max_output_tokens=8192
                     ),
-                    request_options={"timeout": 15}
+                    request_options={"timeout": 35}
                 )
                 if response and hasattr(response, 'text'):
                     break
@@ -354,21 +459,11 @@ def generate_itinerary():
                     }), 400
                 continue
 
-        if not response:
+        if not response or not hasattr(response, 'text'):
             raise last_err or Exception("Failed to generate content with available models.")
 
         text = response.text.strip()
-        
-        # Clean potential markdown block
-        if text.startswith('```json'):
-            text = text[7:]
-        elif text.startswith('```'):
-            text = text[3:]
-        if text.endswith('```'):
-            text = text[:-3]
-        text = text.strip()
-            
-        itinerary_data = json.loads(text)
+        itinerary_data = robust_json_parse(text)
         return jsonify({"success": True, "data": itinerary_data})
 
     except Exception as e:
@@ -376,7 +471,7 @@ def generate_itinerary():
         err_str = str(e)
         if "401" in err_str or "Unauthenticated" in err_str or "API_KEY_INVALID" in err_str or "invalid authentication" in err_str.lower():
             return jsonify({"success": False, "message": "Authentication failed: Invalid Gemini API Key."}), 401
-        return jsonify({"success": False, "message": err_str}), 500
+        return jsonify({"success": False, "message": f"Failed to parse AI output: {err_str}"}), 500
 
 @app.route('/api/save', methods=['POST'])
 def save_itinerary():
