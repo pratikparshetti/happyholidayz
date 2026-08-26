@@ -430,8 +430,7 @@ def generate_itinerary():
             'gemini-3.6-flash', 
             'gemini-3.5-flash', 
             'gemini-flash-latest', 
-            'gemini-3.1-pro-preview', 
-            'gemini-2.5-flash'
+            'gemini-3.1-pro-preview'
         ]
         response = None
         last_err = None
