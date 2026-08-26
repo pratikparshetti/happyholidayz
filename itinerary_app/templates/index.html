@@ -224,7 +224,8 @@
             <input type="number" id="aiDays" value="5" min="1" max="15">
           </div>
           <div class="col" style="align-self:end;">
-            <button type="button" class="btn" id="aiGenerateBtn" style="background:#d35400;" onclick="generateItinerary()">Generate Itinerary</button>
+            <button type="button" class="btn" id="aiGenerateBtn" style="background:#d35400;"
+              onclick="generateItinerary()">Generate Itinerary</button>
           </div>
         </div>
         <div id="aiStatus" style="margin-top:10px; font-weight:bold; color:#d35400;"></div>
@@ -367,7 +368,7 @@
     </form>
   </main>
 
-  <footer>© 2025 Happy Holidayz Tours and Travels</footer>
+  <footer>© 2026 Happy Holidayz Tours and Travels</footer>
 
   <script>
     // Helpers
@@ -855,7 +856,7 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
       </div>
     </section>
     <footer style="margin-top:24px; text-align:center; color:#555;">
-      © 2025 Happy Holidayz Tours and Travels
+      © 2026 Happy Holidayz Tours and Travels
     </footer>
   </div>
 </main>
@@ -925,8 +926,8 @@ footer{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#f
         const res = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            destination: dest, 
+          body: JSON.stringify({
+            destination: dest,
             days: days
           }),
           signal: controller.signal
