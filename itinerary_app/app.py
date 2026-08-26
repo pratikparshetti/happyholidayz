@@ -5,6 +5,46 @@ from flask import Flask, render_template, request, jsonify, make_response
 import google.generativeai as genai
 from datetime import datetime, timedelta
 
+# Helper to load configuration from startup.bat or .env file
+def load_env_config():
+    # 1. Parse startup.bat for set GEMINI_API_KEY=...
+    startup_bat = os.path.join(os.path.dirname(__file__), 'startup.bat')
+    if os.path.exists(startup_bat):
+        try:
+            with open(startup_bat, 'r', encoding='utf-8', errors='ignore') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.lower().startswith(('rem', '::')):
+                        if 'GEMINI_API_KEY' in line and '=' in line:
+                            if line.lower().startswith('set '):
+                                line = line[4:].strip()
+                            k, v = line.split('=', 1)
+                            key_name = k.strip().strip('"\'')
+                            val_name = v.strip().strip('"\'')
+                            if key_name == 'GEMINI_API_KEY' and val_name and not val_name.startswith('AIzaSy...'):
+                                os.environ['GEMINI_API_KEY'] = val_name
+                                break
+        except Exception as e:
+            print(f"Warning: Failed to parse startup.bat: {e}")
+
+    # 2. Fallback to .env file if present
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        k, v = line.split('=', 1)
+                        key_name = k.strip()
+                        val_name = v.strip().strip('"\'')
+                        if (key_name not in os.environ or not os.environ[key_name]) and val_name:
+                            os.environ[key_name] = val_name
+        except Exception as e:
+            print(f"Warning: Failed to parse .env file: {e}")
+
+load_env_config()
+
 app = Flask(__name__)
 STORAGE_DIR = 'saved_itineraries'
 
@@ -235,22 +275,31 @@ def index():
 @app.route('/api/generate', methods=['POST'])
 def generate_itinerary():
     try:
-        data = request.json
+        data = request.json or {}
         destination = data.get('destination')
         days = int(data.get('days', 3))
+        
+        # Refresh environment configuration from startup.bat or .env
+        load_env_config()
+        api_key = os.getenv('GEMINI_API_KEY', '').strip()
         
         if not destination:
             return jsonify({"success": False, "message": "Destination is required"}), 400
 
-        # Configure Gemini
-        api_key = os.getenv('GEMINI_API_KEY')
-        if not api_key:
-             return jsonify({"success": False, "message": "GEMINI_API_KEY not set on server"}), 500
+        if not api_key or api_key == "your_gemini_api_key_here":
+            return jsonify({
+                "success": False, 
+                "message": "GEMINI_API_KEY is not set. Please set your key in startup.bat (e.g. set GEMINI_API_KEY=your_key) or .env file."
+            }), 400
         
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-flash-latest')
+        if len(api_key) < 10:
+            return jsonify({
+                "success": False, 
+                "message": "The key provided appears to be invalid or incomplete. Please check GEMINI_API_KEY in startup.bat."
+            }), 400
 
-        # Prompt construction
+        genai.configure(api_key=api_key)
+
         prompt = f"""
         Generate a {days}-day travel itinerary for {destination}. 
         Return ONLY valid JSON in the following format:
@@ -264,29 +313,70 @@ def generate_itinerary():
                 {{
                     "title": "Title ONLY (e.g. Arrival & City Tour). Do NOT include 'Day 1' prefix.",
                     "description": "Detailed activities for the day."
-                }},
-                ... (repeat for {days} days)
+                }}
             ]
         }}
         
         Do not include markdown formatting like ```json or ```. Just the raw JSON.
         """
         
-        response = model.generate_content(prompt)
+        models_to_try = [
+            'gemini-3.6-flash', 
+            'gemini-3.5-flash', 
+            'gemini-flash-latest', 
+            'gemini-3.1-pro-preview', 
+            'gemini-2.5-flash'
+        ]
+        response = None
+        last_err = None
+        
+        for model_name in models_to_try:
+            try:
+                model = genai.GenerativeModel(model_name)
+                response = model.generate_content(
+                    prompt,
+                    generation_config=genai.types.GenerationConfig(
+                        temperature=0.7,
+                        max_output_tokens=2048
+                    ),
+                    request_options={"timeout": 15}
+                )
+                if response and hasattr(response, 'text'):
+                    break
+            except Exception as e:
+                last_err = e
+                err_msg = str(e)
+                # Catch auth/permission error immediately to prevent long retry hang loops
+                if any(tok in err_msg.lower() for tok in ["401", "400", "403", "api_key_invalid", "unauthenticated", "permission_denied"]):
+                    return jsonify({
+                        "success": False,
+                        "message": f"Gemini API Auth Error: {err_msg}"
+                    }), 400
+                continue
+
+        if not response:
+            raise last_err or Exception("Failed to generate content with available models.")
+
         text = response.text.strip()
         
-        # Clean potential markdown
+        # Clean potential markdown block
         if text.startswith('```json'):
             text = text[7:]
+        elif text.startswith('```'):
+            text = text[3:]
         if text.endswith('```'):
             text = text[:-3]
+        text = text.strip()
             
         itinerary_data = json.loads(text)
         return jsonify({"success": True, "data": itinerary_data})
 
     except Exception as e:
         print(f"Error generating itinerary: {e}")
-        return jsonify({"success": False, "message": str(e)}), 500
+        err_str = str(e)
+        if "401" in err_str or "Unauthenticated" in err_str or "API_KEY_INVALID" in err_str or "invalid authentication" in err_str.lower():
+            return jsonify({"success": False, "message": "Authentication failed: Invalid Gemini API Key."}), 401
+        return jsonify({"success": False, "message": err_str}), 500
 
 @app.route('/api/save', methods=['POST'])
 def save_itinerary():
