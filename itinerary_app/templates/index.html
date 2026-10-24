@@ -531,77 +531,239 @@ daysContainer.addEventListener("click", function (event) {
     const genHotelsBtn = document.getElementById('genHotelsBtn');
     const numHotelsInput = document.getElementById('numHotels');
 
-    function generateHotelForms(n) {
-      hotelsContainer.innerHTML = '';
-      for (let i = 1; i <= n; i++) {
-        const node = el(`
-      <div class="hotel-form">
-        <strong>Hotel ${i}</strong>
-        <div class="row" style="margin-top:8px">
-          <label class="block col">Hotel Name <input type="text" name="hotelName${i}" required></label>
-          <label class="block col">Room Type <input type="text" name="roomType${i}" required></label>
+    <!-- new Code Start -->
+let nextHotelId = 1;
+
+// Format a date using local time to avoid timezone shifts.
+function formatHotelDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseHotelDate(value) {
+  return value ? new Date(`${value}T00:00:00`) : null;
+}
+
+// Create one hotel block.
+function createHotelBlock(data = {}) {
+  const id = nextHotelId++;
+
+  const node = el(`
+    <div class="hotel-form" data-hotel-id="${id}">
+      <div class="hotel-header"
+           style="display:flex; align-items:center; justify-content:space-between;">
+        <strong class="hotel-heading">Hotel</strong>
+
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="add-hotel"
+                  title="Add hotel after this one"
+                  aria-label="Add hotel">＋</button>
+
+          <button type="button" class="remove-hotel"
+                  title="Remove this hotel"
+                  aria-label="Remove hotel">×</button>
         </div>
-        <div class="row" style="margin-top:8px">
-          <label class="block col">Check-in <input type="date" name="checkIn${i}" class="hotel-checkin" data-hotel="${i}" required></label>
-          <label class="block col">Check-out <input type="date" name="checkOut${i}" class="hotel-checkout" data-hotel="${i}" required></label>
-        </div>
-        <div class="row" style="margin-top:8px">
-          <label class="block col">No. of Rooms <input type="number" min="1" name="noRooms${i}" value="1" required></label>
-          <label class="block col">Nights <input type="number" min="1" name="nights${i}" class="hotel-nights" data-hotel="${i}" value="1" required></label>
-        </div>
-        <label class="block">City <input type="text" name="city${i}" required></label>
       </div>
-    `);
-        hotelsContainer.appendChild(node);
 
-        // Add event listeners for auto-calculation
-        const checkInInput = node.querySelector('.hotel-checkin');
-        const checkOutInput = node.querySelector('.hotel-checkout');
-        const nightsInput = node.querySelector('.hotel-nights');
+      <div class="row" style="margin-top:8px">
+        <label class="block col">
+          Hotel Name
+          <input type="text" class="hotelName" required>
+        </label>
 
-        // When check-in or nights change, update checkout
-        const updateCheckout = () => {
-          const checkIn = checkInInput.value;
-          const nights = parseInt(nightsInput.value);
-          if (checkIn && nights > 0) {
-            const checkInDate = new Date(checkIn);
-            const checkOutDate = new Date(checkInDate);
-            checkOutDate.setDate(checkInDate.getDate() + nights);
-            checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+        <label class="block col">
+          Room Type
+          <input type="text" class="roomType" required>
+        </label>
+      </div>
 
-            // Cascade to next hotel's check-in
-            cascadeToNextHotel(i, checkOutDate);
-          }
-        };
+      <div class="row" style="margin-top:8px">
+        <label class="block col">
+          Check-in
+          <input type="date" class="hotel-checkin" required>
+        </label>
 
-        // When checkout or check-in change, update nights
-        const updateNights = () => {
-          const checkIn = checkInInput.value;
-          const checkOut = checkOutInput.value;
-          if (checkIn && checkOut) {
-            const checkInDate = new Date(checkIn);
-            const checkOutDate = new Date(checkOut);
-            const diffTime = checkOutDate - checkInDate;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays > 0) {
-              nightsInput.value = diffDays;
-            }
-          }
-        };
+        <label class="block col">
+          Check-out
+          <input type="date" class="hotel-checkout" required>
+        </label>
+      </div>
 
-        checkInInput.addEventListener('change', updateCheckout);
-        nightsInput.addEventListener('change', updateCheckout);
-        checkOutInput.addEventListener('change', () => {
-          updateNights();
-          const checkOut = checkOutInput.value;
-          if (checkOut) {
-            cascadeToNextHotel(i, new Date(checkOut));
-          }
-        });
+      <div class="row" style="margin-top:8px">
+        <label class="block col">
+          No. of Rooms
+          <input type="number" min="1" class="noRooms"
+                 value="1" required>
+        </label>
+
+        <label class="block col">
+          Nights
+          <input type="number" min="1" class="hotel-nights"
+                 value="1" required>
+        </label>
+      </div>
+
+      <label class="block">
+        City
+        <input type="text" class="hotelCity" required>
+      </label>
+    </div>
+  `);
+
+  // Restore values if supplied.
+  node.querySelector(".hotelName").value = data.name || "";
+  node.querySelector(".roomType").value = data.roomType || "";
+  node.querySelector(".hotel-checkin").value = data.checkIn || "";
+  node.querySelector(".hotel-checkout").value = data.checkOut || "";
+  node.querySelector(".noRooms").value = data.rooms ?? 1;
+  node.querySelector(".hotel-nights").value = data.nights ?? 1;
+  node.querySelector(".hotelCity").value = data.city || "";
+
+  const checkInInput = node.querySelector(".hotel-checkin");
+  const checkOutInput = node.querySelector(".hotel-checkout");
+  const nightsInput = node.querySelector(".hotel-nights");
+
+  // Find the hotel's CURRENT position, not its original position.
+  function getHotelIndex() {
+    return Array.from(
+      hotelsContainer.querySelectorAll(".hotel-form")
+    ).indexOf(node);
+  }
+
+  // Update checkout when check-in or nights change.
+  function updateCheckout() {
+    const checkIn = parseHotelDate(checkInInput.value);
+    const nights = parseInt(nightsInput.value, 10);
+
+    if (checkIn && nights > 0) {
+      const checkOut = new Date(checkIn);
+      checkOut.setDate(checkOut.getDate() + nights);
+
+      checkOutInput.value = formatHotelDate(checkOut);
+
+      cascadeToNextHotel(getHotelIndex(), checkOut);
+    }
+  }
+
+  // Update nights when checkout changes.
+  function updateNights() {
+    const checkIn = parseHotelDate(checkInInput.value);
+    const checkOut = parseHotelDate(checkOutInput.value);
+
+    if (checkIn && checkOut) {
+      const diffDays = Math.round(
+        (checkOut - checkIn) / (1000 * 60 * 60 * 24)
+      );
+
+      if (diffDays > 0) {
+        nightsInput.value = diffDays;
       }
     }
+  }
 
-    // Helper function to cascade checkout date to next hotel's check-in
+  checkInInput.addEventListener("change", updateCheckout);
+  nightsInput.addEventListener("change", updateCheckout);
+
+  checkOutInput.addEventListener("change", () => {
+    updateNights();
+
+    const checkOut = parseHotelDate(checkOutInput.value);
+
+    if (checkOut) {
+      cascadeToNextHotel(getHotelIndex(), checkOut);
+    }
+  });
+
+  return node;
+}
+
+// Update hotel labels, field names, and data-hotel attributes.
+function renumberHotels() {
+  const hotels = hotelsContainer.querySelectorAll(".hotel-form");
+
+  hotels.forEach((hotel, index) => {
+    const number = index + 1;
+
+    hotel.querySelector(".hotel-heading").textContent =
+      `Hotel ${number}`;
+
+    hotel.querySelector(".hotelName").name =
+      `hotelName${number}`;
+
+    hotel.querySelector(".roomType").name =
+      `roomType${number}`;
+
+    hotel.querySelector(".hotel-checkin").name =
+      `checkIn${number}`;
+
+    hotel.querySelector(".hotel-checkout").name =
+      `checkOut${number}`;
+
+    hotel.querySelector(".noRooms").name =
+      `noRooms${number}`;
+
+    hotel.querySelector(".hotel-nights").name =
+      `nights${number}`;
+
+    hotel.querySelector(".hotelCity").name =
+      `city${number}`;
+
+    hotel.querySelector(".hotel-checkin").dataset.hotel =
+      number;
+
+    hotel.querySelector(".hotel-checkout").dataset.hotel =
+      number;
+
+    hotel.querySelector(".hotel-nights").dataset.hotel =
+      number;
+  });
+}
+
+// Add blocks up to the requested count without deleting existing data.
+function generateHotelForms(n) {
+  n = Math.max(0, Math.floor(Number(n) || 0));
+
+  while (
+    hotelsContainer.querySelectorAll(".hotel-form").length < n
+  ) {
+    hotelsContainer.appendChild(createHotelBlock());
+  }
+
+  renumberHotels();
+}
+
+// Add/remove controls: register this handler only once.
+if (!hotelsContainer.dataset.hotelControlsInitialized) {
+  hotelsContainer.addEventListener("click", function (event) {
+    const addButton = event.target.closest(".add-hotel");
+    const removeButton = event.target.closest(".remove-hotel");
+
+    if (!addButton && !removeButton) return;
+
+    const currentHotel = event.target.closest(".hotel-form");
+    if (!currentHotel) return;
+
+    if (addButton) {
+      const newHotel = createHotelBlock();
+
+      currentHotel.after(newHotel);
+      renumberHotels();
+
+      newHotel.querySelector(".hotelName").focus();
+    }
+
+    if (removeButton) {
+      currentHotel.remove();
+      renumberHotels();
+    }
+  });
+
+  hotelsContainer.dataset.hotelControlsInitialized = "true";
+}	
+	<!-- new code end -->
+	// Helper function to cascade checkout date to next hotel's check-in
     function cascadeToNextHotel(currentHotelIndex, checkOutDate) {
       const nextHotelIndex = currentHotelIndex + 1;
       const nextCheckInInput = document.querySelector(`input[name="checkIn${nextHotelIndex}"]`);
@@ -626,7 +788,7 @@ daysContainer.addEventListener("click", function (event) {
         }
       }
     }
-
+	
 
     // Flights dynamic
     const flightsContainer = document.getElementById('flightsContainer');
