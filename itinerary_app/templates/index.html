@@ -545,7 +545,7 @@ function createDayBlock(data = {}) {
 
 function renumberDays() {
   const blocks = daysContainer.querySelectorAll(".day-form");
-
+	
   blocks.forEach((block, index) => {
     const dayNumber = index + 1;
 
@@ -563,6 +563,7 @@ function renumberDays() {
 
     block.querySelector(".dayImg").name =
       `dayImg${dayNumber}`;
+	  document.querySelector('[name="numDays"]').value = dayNumber;
   });
 }
 
@@ -791,6 +792,8 @@ function renumberHotels() {
 
     hotel.querySelector(".hotel-nights").dataset.hotel =
       number;
+	  
+	document.querySelector('[name="numHotels"]').value = number;
   });
 }
 
@@ -964,6 +967,7 @@ if (!hotelsContainer.dataset.hotelControlsInitialized) {
 
 		block.querySelector(".flightArrAirport").name =
 		  `flightArrAirport${number}`;
+		  document.querySelector('[name="numFlights"]').value = number;
 	  });
 	}
 
@@ -1163,6 +1167,7 @@ if (!hotelsContainer.dataset.hotelControlsInitialized) {
 
 		block.querySelector(".trainSeats").name =
 		  `trainSeats${number}`;
+		  document.querySelector('[name="numTrains"]').value = number;
 	  });
 	}
 
@@ -1306,6 +1311,7 @@ function renumberPackages() {
 
     block.querySelector(".packageDesc").name =
       `packageDesc${number}`;
+	  document.querySelector('[name="numPackages"]').value = number;
   });
 }
 
