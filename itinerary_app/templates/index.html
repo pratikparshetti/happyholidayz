@@ -198,6 +198,87 @@
       height: 18px;
       cursor: pointer;
     }
+
+	/* Common circular action buttons */
+	.add-day,
+	.add-hotel,
+	.add-package,
+	.add-flight,
+	.add-train,
+	.remove-day,
+	.remove-hotel,
+	.remove-package,
+	.remove-flight,
+	.remove-train {
+	  width: 32px;
+	  height: 32px;
+	  padding: 0;
+	  border: none;
+	  border-radius: 50%;
+	  display: inline-flex;
+	  align-items: center;
+	  justify-content: center;
+	  font-size: 22px;
+	  font-weight: 600;
+	  line-height: 1;
+	  cursor: pointer;
+	  transition: background-color 0.2s ease,
+				  transform 0.2s ease;
+	}
+
+	/* Green circular plus button */
+	.add-day,
+	.add-hotel,
+	.add-package,
+	.add-flight,
+	.add-train {
+	  background-color: #16a34a;
+	  color: #ffffff;
+	}
+
+	.add-day:hover,
+	.add-hotel:hover,
+	.add-package:hover,
+	.add-flight:hover,
+	.add-train:hover {
+	  background-color: #15803d;
+	  transform: scale(1.08);
+	}
+
+	/* Red circular cross button */
+	.remove-day,
+	.remove-hotel,
+	.remove-package,
+	.remove-flight,
+	.remove-train {
+	  background-color: #dc2626;
+	  color: #ffffff;
+	}
+
+	.remove-day:hover,
+	.remove-hotel:hover,
+	.remove-package:hover,
+	.remove-flight:hover,
+	.remove-train:hover {
+	  background-color: #b91c1c;
+	  transform: scale(1.08);
+	}
+
+	/* Keyboard accessibility */
+	.add-day:focus-visible,
+	.add-hotel:focus-visible,
+	.add-package:focus-visible,
+	.add-flight:focus-visible,
+	.add-train:focus-visible,
+	.remove-day:focus-visible,
+	.remove-hotel:focus-visible,
+	.remove-package:focus-visible,
+	.remove-flight:focus-visible,
+	.remove-train:focus-visible {
+	  outline: 3px solid #93c5fd;
+	  outline-offset: 2px;
+	}
+
   </style>
 </head>
 
