@@ -953,22 +953,199 @@ if (!hotelsContainer.dataset.hotelControlsInitialized) {
     const genTrainsBtn = document.getElementById('genTrainsBtn');
     const numTrainsInput = document.getElementById('numTrains');
 
-    function generateTrainForms(n) {
-      trainsContainer.innerHTML = '';
-      const start = document.getElementById("startDate")?.value || "";
-      const defaultDateTime = start ? start + "T00:00" : "";
-      for (let i = 1; i <= n; i++) {
-        const node = el(`
-      <div class="hotel-form">
-        <strong>Train ${i}</strong>
-        <div class='row'><label class='block col'>Train No<input type='text' name='trainNo${i}'></label><label class='block col'>Train Name<input type='text' name='trainName${i}'></label></div>
-    <div class='row'><label class='block col'>Departure Date & Time<input type='datetime-local' name='trainDepDateTime${i}' class='auto-dep-date' value='${defaultDateTime}'></label><label class='block col'>Departure Station<input type='text' name='trainDepStation${i}'></label></div>
-    <div class='row'><label class='block col'>Arrival Date & Time<input type='datetime-local' name='trainArrDateTime${i}'></label><label class='block col'>Arrival Station<input type='text' name='trainArrStation${i}'></label></div>
-    <label class='block'>Seats Category<select name='trainSeats${i}' required><option value=''>Select</option><option value='CC'>CC</option><option value='SL'>SL</option><option value='3AC'>3AC</option><option value='2AC'>2AC</option><option value='1AC'>1AC</option></select></label></div>
-    `);
-        trainsContainer.appendChild(node);
-      }
-    }
+    
+	let nextTrainId = 1;
+
+	// Create one train block.
+	function createTrainBlock(data = {}) {
+	  const id = nextTrainId++;
+
+	  const start = document.getElementById("startDate")?.value || "";
+	  const defaultDateTime = start ? start + "T00:00" : "";
+
+	  const node = el(`
+		<div class="hotel-form train-form" data-train-id="${id}">
+		  <div class="train-header"
+			   style="display:flex; align-items:center; justify-content:space-between;">
+			<strong class="train-heading">Train</strong>
+
+			<div style="display:flex; gap:8px;">
+			  <button type="button" class="add-train"
+					  title="Add train after this one"
+					  aria-label="Add train">＋</button>
+
+			  <button type="button" class="remove-train"
+					  title="Remove this train"
+					  aria-label="Remove train">×</button>
+			</div>
+		  </div>
+
+		  <div class="row" style="margin-top:8px">
+			<label class="block col">
+			  Train No
+			  <input type="text" class="trainNo">
+			</label>
+
+			<label class="block col">
+			  Train Name
+			  <input type="text" class="trainName">
+			</label>
+		  </div>
+
+		  <div class="row" style="margin-top:8px">
+			<label class="block col">
+			  Departure Date &amp; Time
+			  <input type="datetime-local" class="trainDepDateTime">
+			</label>
+
+			<label class="block col">
+			  Departure Station
+			  <input type="text" class="trainDepStation">
+			</label>
+		  </div>
+
+		  <div class="row" style="margin-top:8px">
+			<label class="block col">
+			  Arrival Date &amp; Time
+			  <input type="datetime-local" class="trainArrDateTime">
+			</label>
+
+			<label class="block col">
+			  Arrival Station
+			  <input type="text" class="trainArrStation">
+			</label>
+		  </div>
+
+		  <label class="block">
+			Seats Category
+			<select class="trainSeats" required>
+			  <option value="">Select</option>
+			  <option value="CC">CC</option>
+			  <option value="SL">SL</option>
+			  <option value="3AC">3AC</option>
+			  <option value="2AC">2AC</option>
+			  <option value="1AC">1AC</option>
+			</select>
+		  </label>
+		</div>
+	  `);
+
+	  // Restore existing values or apply defaults.
+	  node.querySelector(".trainNo").value = data.trainNo || "";
+	  node.querySelector(".trainName").value = data.trainName || "";
+
+	  node.querySelector(".trainDepDateTime").value =
+		data.depDateTime ?? defaultDateTime;
+
+	  node.querySelector(".trainDepStation").value =
+		data.depStation || "";
+
+	  node.querySelector(".trainArrDateTime").value =
+		data.arrDateTime || "";
+
+	  node.querySelector(".trainArrStation").value =
+		data.arrStation || "";
+
+	  node.querySelector(".trainSeats").value =
+		data.seats || "";
+
+	  return node;
+	}
+
+	// Renumber headings and field names.
+	function renumberTrains() {
+	  const trains = trainsContainer.querySelectorAll(".train-form");
+
+	  trains.forEach((block, index) => {
+		const number = index + 1;
+
+		block.querySelector(".train-heading").textContent =
+		  `Train ${number}`;
+
+		block.querySelector(".trainNo").name =
+		  `trainNo${number}`;
+
+		block.querySelector(".trainName").name =
+		  `trainName${number}`;
+
+		block.querySelector(".trainDepDateTime").name =
+		  `trainDepDateTime${number}`;
+
+		block.querySelector(".trainDepStation").name =
+		  `trainDepStation${number}`;
+
+		block.querySelector(".trainArrDateTime").name =
+		  `trainArrDateTime${number}`;
+
+		block.querySelector(".trainArrStation").name =
+		  `trainArrStation${number}`;
+
+		block.querySelector(".trainSeats").name =
+		  `trainSeats${number}`;
+	  });
+	}
+
+	// Add blocks without destroying existing train data.
+	function generateTrainForms(n) {
+	  n = Math.max(0, Math.floor(Number(n) || 0));
+
+	  while (
+		trainsContainer.querySelectorAll(".train-form").length < n
+	  ) {
+		trainsContainer.appendChild(createTrainBlock());
+	  }
+
+	  renumberTrains();
+	}
+
+	// Register add/remove handlers only once.
+	if (!trainsContainer.dataset.trainControlsInitialized) {
+	  trainsContainer.addEventListener("click", function (event) {
+		const addButton = event.target.closest(".add-train");
+		const removeButton = event.target.closest(".remove-train");
+
+		if (!addButton && !removeButton) return;
+
+		const currentBlock = event.target.closest(".train-form");
+		if (!currentBlock) return;
+
+		if (addButton) {
+		  const newBlock = createTrainBlock();
+
+		  currentBlock.after(newBlock);
+		  renumberTrains();
+
+		  newBlock.querySelector(".trainNo").focus();
+		}
+
+		if (removeButton) {
+		  currentBlock.remove();
+		  renumberTrains();
+		}
+	  });
+
+	  trainsContainer.dataset.trainControlsInitialized = "true";
+	}
+
+	// Synchronize the first train's departure date with the trip start date.
+	document.getElementById("startDate")?.addEventListener("change", function () {
+	  const firstTrain = trainsContainer.querySelector(".train-form");
+	  if (!firstTrain) return;
+
+	  const departureInput =
+		firstTrain.querySelector(".trainDepDateTime");
+
+	  if (departureInput) {
+		const currentTime = departureInput.value
+		  ? departureInput.value.slice(11, 16)
+		  : "00:00";
+
+		departureInput.value = this.value
+		  ? `${this.value}T${currentTime}`
+		  : "";
+	  }
+	});
+
 
     // Packages dynamic
     const packagesContainer = document.getElementById('packagesContainer');
