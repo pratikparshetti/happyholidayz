@@ -406,24 +406,125 @@
     const daysContainer = document.getElementById('daysContainer');
     const numDaysInput = document.querySelector('[name="numDays"]');
 
-    function generateDayForms(n) {
-      daysContainer.innerHTML = '';
-      for (let i = 1; i <= n; i++) {
-        const node = el(`
-      <div class="day-form">
-        <strong>Day ${i}</strong>
-        <div class="row" style="margin-top:8px">
-          <label class="block col">Title <input type="text" name="dayTitle${i}" required></label>
-          <label class="block col">Date <input type="date" name="dayDate${i}" class="dayDate" required></label>
+	
+let nextDayId = 1;
+
+function createDayBlock(data = {}) {
+  const id = nextDayId++;
+
+  const node = el(`
+    <div class="day-form" data-day-id="${id}">
+      <div class="day-header"
+           style="display:flex; align-items:center; justify-content:space-between;">
+        <strong class="day-heading">Day</strong>
+
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="add-day"
+                  title="Add day after this one"
+                  aria-label="Add day">＋</button>
+
+          <button type="button" class="remove-day"
+                  title="Remove this day"
+                  aria-label="Remove day">×</button>
         </div>
-        <label class="block">Description <textarea name="dayDesc${i}" required></textarea></label>
-        <label class="block">Image URL <input type="url" name="dayImg${i}" placeholder="https://..."></label>
       </div>
-    `);
-        daysContainer.appendChild(node);
-      }
-      autoFillDates();
-    }
+
+      <div class="row" style="margin-top:8px">
+        <label class="block col">
+          Title
+          <input type="text" class="dayTitle" required>
+        </label>
+
+        <label class="block col">
+          Date
+          <input type="date" class="dayDate" required>
+        </label>
+      </div>
+
+      <label class="block">
+        Description
+        <textarea class="dayDesc" required></textarea>
+      </label>
+
+      <label class="block">
+        Image URL
+        <input type="url" class="dayImg" placeholder="https://...">
+      </label>
+    </div>
+  `);
+
+  // Restore values when creating a block from existing data.
+  node.querySelector(".dayTitle").value = data.title || "";
+  node.querySelector(".dayDate").value = data.date || "";
+  node.querySelector(".dayDesc").value = data.desc || "";
+  node.querySelector(".dayImg").value = data.img || "";
+
+  return node;
+}
+
+function renumberDays() {
+  const blocks = daysContainer.querySelectorAll(".day-form");
+
+  blocks.forEach((block, index) => {
+    const dayNumber = index + 1;
+
+    block.querySelector(".day-heading").textContent =
+      `Day ${dayNumber}`;
+
+    block.querySelector(".dayTitle").name =
+      `dayTitle${dayNumber}`;
+
+    block.querySelector(".dayDate").name =
+      `dayDate${dayNumber}`;
+
+    block.querySelector(".dayDesc").name =
+      `dayDesc${dayNumber}`;
+
+    block.querySelector(".dayImg").name =
+      `dayImg${dayNumber}`;
+  });
+}
+
+// Initial generation or increase to the requested number.
+// Existing blocks and their data are preserved.
+function generateDayForms(n) {
+  n = Math.max(0, Math.floor(Number(n) || 0));
+
+  while (daysContainer.querySelectorAll(".day-form").length < n) {
+    daysContainer.appendChild(createDayBlock());
+  }
+
+  renumberDays();
+  autoFillDates();
+}
+
+// Handle plus and close buttons for every block.
+daysContainer.addEventListener("click", function (event) {
+  const addButton = event.target.closest(".add-day");
+  const removeButton = event.target.closest(".remove-day");
+
+  if (!addButton && !removeButton) return;
+
+  const currentBlock = event.target.closest(".day-form");
+  if (!currentBlock) return;
+
+  if (addButton) {
+    const newBlock = createDayBlock();
+
+    currentBlock.after(newBlock);
+    renumberDays();
+	autoFillDates();
+
+    newBlock.querySelector(".dayTitle").focus();
+  }
+
+  if (removeButton) {
+    currentBlock.remove();
+    renumberDays();
+	autoFillDates();
+  }
+});
+
 
     // Hotels dynamic
     const hotelsContainer = document.getElementById('hotelsContainer');
