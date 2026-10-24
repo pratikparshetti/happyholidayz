@@ -787,21 +787,166 @@ if (!hotelsContainer.dataset.hotelControlsInitialized) {
     const genFlightsBtn = document.getElementById('genFlightsBtn');
     const numFlightsInput = document.getElementById('numFlights');
 
-    function generateFlightForms(n) {
-      flightsContainer.innerHTML = '';
-      const start = document.getElementById("startDate")?.value || "";
-      const defaultDateTime = start ? start + "T00:00" : "";
-      for (let i = 1; i <= n; i++) {
-        const node = el(`
-      <div class="hotel-form">
-        <strong>Flight ${i}</strong>
-        <div class='row'><label class='block col'>Flight Number<input type='text' name='flightNo${i}'></label><label class='block col'>Departure Date & Time<input type='datetime-local' name='flightDepDateTime${i}' class='auto-dep-date' value='${defaultDateTime}'></label></div>
-    <div class='row'><label class='block col'>Departure Airport<input type='text' name='flightDepAirport${i}'></label><label class='block col'>Arrival Date & Time<input type='datetime-local' name='flightArrDateTime${i}'></label></div>
-    <label class='block'>Arrival Airport<input type='text' name='flightArrAirport${i}'></label></div>
-    `);
-        flightsContainer.appendChild(node);
-      }
-    }
+    
+	let nextFlightId = 1;
+
+	// Create one flight block.
+	function createFlightBlock(data = {}) {
+	  const id = nextFlightId++;
+
+	  const start = document.getElementById("startDate")?.value || "";
+	  const defaultDateTime = start ? start + "T00:00" : "";
+
+	  const node = el(`
+		<div class="hotel-form flight-form" data-flight-id="${id}">
+		  <div class="flight-header"
+			   style="display:flex; align-items:center; justify-content:space-between;">
+			<strong class="flight-heading">Flight</strong>
+
+			<div style="display:flex; gap:8px;">
+			  <button type="button" class="add-flight"
+					  title="Add flight after this one"
+					  aria-label="Add flight">＋</button>
+
+			  <button type="button" class="remove-flight"
+					  title="Remove this flight"
+					  aria-label="Remove flight">×</button>
+			</div>
+		  </div>
+
+		  <div class="row" style="margin-top:8px">
+			<label class="block col">
+			  Flight Number
+			  <input type="text" class="flightNo">
+			</label>
+
+			<label class="block col">
+			  Departure Date &amp; Time
+			  <input type="datetime-local" class="flightDepDateTime">
+			</label>
+		  </div>
+
+		  <div class="row" style="margin-top:8px">
+			<label class="block col">
+			  Departure Airport
+			  <input type="text" class="flightDepAirport">
+			</label>
+
+			<label class="block col">
+			  Arrival Date &amp; Time
+			  <input type="datetime-local" class="flightArrDateTime">
+			</label>
+		  </div>
+
+		  <label class="block">
+			Arrival Airport
+			<input type="text" class="flightArrAirport">
+		  </label>
+		</div>
+	  `);
+
+	  // Restore values or use defaults for a new flight.
+	  node.querySelector(".flightNo").value = data.flightNo || "";
+	  node.querySelector(".flightDepDateTime").value =
+		data.depDateTime ?? defaultDateTime;
+	  node.querySelector(".flightDepAirport").value =
+		data.depAirport || "";
+	  node.querySelector(".flightArrDateTime").value =
+		data.arrDateTime || "";
+	  node.querySelector(".flightArrAirport").value =
+		data.arrAirport || "";
+
+	  return node;
+	}
+
+	// Renumber all flight headings and input names.
+	function renumberFlights() {
+	  const flights = flightsContainer.querySelectorAll(".flight-form");
+
+	  flights.forEach((block, index) => {
+		const number = index + 1;
+
+		block.querySelector(".flight-heading").textContent =
+		  `Flight ${number}`;
+
+		block.querySelector(".flightNo").name =
+		  `flightNo${number}`;
+
+		block.querySelector(".flightDepDateTime").name =
+		  `flightDepDateTime${number}`;
+
+		block.querySelector(".flightDepAirport").name =
+		  `flightDepAirport${number}`;
+
+		block.querySelector(".flightArrDateTime").name =
+		  `flightArrDateTime${number}`;
+
+		block.querySelector(".flightArrAirport").name =
+		  `flightArrAirport${number}`;
+	  });
+	}
+
+	// Add flights without deleting existing data.
+	function generateFlightForms(n) {
+	  n = Math.max(0, Math.floor(Number(n) || 0));
+
+	  while (
+		flightsContainer.querySelectorAll(".flight-form").length < n
+	  ) {
+		flightsContainer.appendChild(createFlightBlock());
+	  }
+
+	  renumberFlights();
+	}
+
+	// Register the add/remove handler once.
+	if (!flightsContainer.dataset.flightControlsInitialized) {
+	  flightsContainer.addEventListener("click", function (event) {
+		const addButton = event.target.closest(".add-flight");
+		const removeButton = event.target.closest(".remove-flight");
+
+		if (!addButton && !removeButton) return;
+
+		const currentBlock = event.target.closest(".flight-form");
+		if (!currentBlock) return;
+
+		if (addButton) {
+		  const newBlock = createFlightBlock();
+
+		  currentBlock.after(newBlock);
+		  renumberFlights();
+
+		  newBlock.querySelector(".flightNo").focus();
+		}
+
+		if (removeButton) {
+		  currentBlock.remove();
+		  renumberFlights();
+		}
+	  });
+
+	  flightsContainer.dataset.flightControlsInitialized = "true";
+	}
+
+	// Keep departure dates synchronized with the trip start date.
+	document.getElementById("startDate")?.addEventListener("change", function () {
+	  const firstFlight = flightsContainer.querySelector(".flight-form");
+	  if (!firstFlight) return;
+
+	  const departureInput =
+		firstFlight.querySelector(".flightDepDateTime");
+
+	  if (departureInput) {
+		const currentTime = departureInput.value
+		  ? departureInput.value.slice(11, 16)
+		  : "00:00";
+
+		departureInput.value = this.value
+		  ? `${this.value}T${currentTime}`
+		  : "";
+	  }
+	});
+
 
     // Trains dynamic
     const trainsContainer = document.getElementById('trainsContainer');
