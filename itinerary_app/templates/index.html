@@ -534,14 +534,6 @@ daysContainer.addEventListener("click", function (event) {
     <!-- new Code Start -->
 let nextHotelId = 1;
 
-// Format a date using local time to avoid timezone shifts.
-function formatHotelDate(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
 function parseHotelDate(value) {
   return value ? new Date(`${value}T00:00:00`) : null;
 }
@@ -838,22 +830,124 @@ if (!hotelsContainer.dataset.hotelControlsInitialized) {
     const genPackagesBtn = document.getElementById('genPackagesBtn');
     const numPackagesInput = document.getElementById('numPackages');
 
-    function generatePackageForms(n) {
-      packagesContainer.innerHTML = '';
-      for (let i = 1; i <= n; i++) {
-        const node = el(`
-      <div class="hotel-form">
-        <strong>Package Option ${i}</strong>
-        <div class="row" style="margin-top:8px">
-          <label class="block col">Option Name <input type="text" name="packageName${i}" value="Option ${i}" required></label>
-          <label class="block col">Price (INR) <input type="text" name="packagePrice${i}" placeholder="50000" required></label>
+    
+let nextPackageId = 1;
+
+// Create one package option.
+function createPackageBlock(data = {}) {
+  const id = nextPackageId++;
+
+  const node = el(`
+    <div class="hotel-form package-form" data-package-id="${id}">
+      <div class="package-header"
+           style="display:flex; align-items:center; justify-content:space-between;">
+        <strong class="package-heading">Package Option</strong>
+
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="add-package"
+                  title="Add package after this one"
+                  aria-label="Add package">＋</button>
+
+          <button type="button" class="remove-package"
+                  title="Remove this package"
+                  aria-label="Remove package">×</button>
         </div>
-        <label class="block">Description/Details <textarea name="packageDesc${i}" placeholder="Optional details about this package option"></textarea></label>
       </div>
-    `);
-        packagesContainer.appendChild(node);
-      }
+
+      <div class="row" style="margin-top:8px">
+        <label class="block col">
+          Option Name
+          <input type="text" class="packageName" required>
+        </label>
+
+        <label class="block col">
+          Price (INR)
+          <input type="text" class="packagePrice"
+                 placeholder="50000" required>
+        </label>
+      </div>
+
+      <label class="block">
+        Description/Details
+        <textarea class="packageDesc"
+          placeholder="Optional details about this package option"></textarea>
+      </label>
+    </div>
+  `);
+
+  // Restore existing data, or use defaults for a fresh option.
+  node.querySelector(".packageName").value =
+    data.name ?? `Option ${packagesContainer.querySelectorAll(".package-form").length + 1}`;
+
+  node.querySelector(".packagePrice").value = data.price ?? "";
+  node.querySelector(".packageDesc").value = data.desc ?? "";
+
+  return node;
+}
+
+// Update headings and field names after adding or removing options.
+function renumberPackages() {
+  const packages = packagesContainer.querySelectorAll(".package-form");
+
+  packages.forEach((block, index) => {
+    const number = index + 1;
+
+    block.querySelector(".package-heading").textContent =
+      `Package Option ${number}`;
+
+    block.querySelector(".packageName").name =
+      `packageName${number}`;
+
+    block.querySelector(".packagePrice").name =
+      `packagePrice${number}`;
+
+    block.querySelector(".packageDesc").name =
+      `packageDesc${number}`;
+  });
+}
+
+// Add options up to the requested count without deleting existing options.
+function generatePackageForms(n) {
+  n = Math.max(0, Math.floor(Number(n) || 0));
+
+  while (
+    packagesContainer.querySelectorAll(".package-form").length < n
+  ) {
+    packagesContainer.appendChild(createPackageBlock());
+  }
+
+  renumberPackages();
+}
+
+// Register click handlers once.
+if (!packagesContainer.dataset.packageControlsInitialized) {
+  packagesContainer.addEventListener("click", function (event) {
+    const addButton = event.target.closest(".add-package");
+    const removeButton = event.target.closest(".remove-package");
+
+    if (!addButton && !removeButton) return;
+
+    const currentBlock = event.target.closest(".package-form");
+    if (!currentBlock) return;
+
+    if (addButton) {
+      const newBlock = createPackageBlock();
+
+      currentBlock.after(newBlock);
+      renumberPackages();
+
+      newBlock.querySelector(".packageName").focus();
     }
+
+    if (removeButton) {
+      currentBlock.remove();
+      renumberPackages();
+    }
+  });
+
+  packagesContainer.dataset.packageControlsInitialized = "true";
+}
+
 
     // Initialize
     generateDayForms(parseInt(numDaysInput.value) || 1);
